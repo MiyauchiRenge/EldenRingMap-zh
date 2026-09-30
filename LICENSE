@@ -137,12 +137,13 @@ Part 4: community documentation and third-party text — fetched, not committed
   - data/mfg/*.json                 来自 Map for Goblins
                                     https://github.com/VirusAlex/ERR-MapForGoblins-DLL
 
-以下文件同样不在本仓库中，由 tools/fetch_tips.py 抓取后**只保存在你的电脑上**：
 Fextralife wiki 互动地图的路线说明文字。那些文字属于 Fextralife 及其贡献者，
 其条款要求不得自动抓取、不得转载，因此请勿提交、分发或以其他方式公开它们。
 
 The files listed above are not part of this repository: they are fetched at setup time
 by tools/fetch_docs.py, or placed by hand by the user. The route descriptions fetched
-by tools/fetch_tips.py are written by Fextralife and its contributors; their terms ask
 that this text is not fetched automatically and not republished, so keep it on your own
 machine and do not commit or redistribute it.
+
+**已移除（合规处理）**：此前有一个可选脚本 `tools/fetch_tips.py` 会从 Fextralife wiki 抓取路线说明文字。那些文字从未进入本仓库，但脚本本身会执行抓取，而 Fextralife 的条款禁止自动抓取，因此该脚本与 Setup 中对应步骤**已删除**。本仓库不含任何第三方文字，也不会自动抓取任何站点。
+**Removed for compliance**: an optional script `tools/fetch_tips.py` used to scrape route descriptions from the Fextralife wiki. That text was never in this repository, but the script itself performed the scrape, which their terms forbid, so the script and its Setup step have been deleted. This repository contains no third-party text and scrapes nothing.

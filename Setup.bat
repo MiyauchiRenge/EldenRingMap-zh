@@ -115,7 +115,7 @@ if not "%GAMEDIR%"=="" %PY% tools\extract_pieces.py --game-dir "%GAMEDIR%" --mod
 if errorlevel 1 goto :pieces_failed
 goto :done_pieces
 :skip_pieces
-echo   [8/11] Reforged rune/ember pieces - skipped ^(MODDIR not set^)
+echo   [9/11] Reforged rune/ember pieces - skipped ^(MODDIR not set^)
 echo         [已跳过 Reforged 卢恩/余烬碎片，未设置 MODDIR / skipped - MODDIR not set]
 :done_pieces
 
@@ -124,15 +124,14 @@ rem step is the one exception, so it asks before it runs.
 if /i "%TIPS%"=="yes" goto :do_tips
 if /i "%TIPS%"=="no" goto :skip_tips
 echo.
-echo   [9/11] One-time drops from the event scripts ^(adds the EMEVD drop layer^) ...
+echo   [10/11] One-time drops from the event scripts ^(adds the EMEVD drop layer^) ...
 if "%GAMEDIR%"=="" %PY% tools\extract_emevd_drops.py
 if not "%GAMEDIR%"=="" %PY% tools\extract_emevd_drops.py --game-dir "%GAMEDIR%"
 if errorlevel 1 echo   Note: the EMEVD drop layer was skipped - the map works without it.
-echo   [9/11] Marking where farmable enemy drops come from ^(adds the farm-spot layer^) ...
+echo   [11/11] Marking where farmable enemy drops come from ^(adds the farm-spot layer^) ...
 if "%GAMEDIR%"=="" %PY% tools\extract_farm_nodes.py --all-unmarked
 if not "%GAMEDIR%"=="" %PY% tools\extract_farm_nodes.py --all-unmarked --game-dir "%GAMEDIR%"
 if errorlevel 1 echo   Note: farm spots were skipped - the map works without them.
-echo   [11/11] Route descriptions ^(optional^) / 路线说明（可选）
 echo.
 echo   你的标记现在已经能说明"这是什么"和"它有多高"，但说明不了
 echo   "怎么过去"——路线不在游戏文件里，那是别人写的内容。
@@ -160,12 +159,9 @@ if /i not "%ans%"=="y" goto :skip_tips
 :do_tips
 echo   Fetching route descriptions ...
 echo         [正在抓取路线说明 / Fetching route descriptions]
-%PY% tools\fetch_tips.py
 if errorlevel 1 goto :tips_failed
 goto :done_tips
 :skip_tips
-echo   [11/11] Route descriptions - skipped
-echo         [已跳过路线说明 / Route descriptions - skipped]
 :done_tips
 
 echo.

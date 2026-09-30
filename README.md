@@ -419,7 +419,6 @@ tools/                         全部 Python 工具
   extract_items.py             生成道具标记与商人      -> data/items.json、data/npcs.json
   extract_pieces.py            Reforged 碎片（可选）   -> data/pieces.json
   fetch_docs.py                取社区格式文档          -> data/paramdefs/、data/mfg/…
-  fetch_tips.py               抓取路线说明（可选）    -> data/tips.json
   erlib/                       读游戏归档、参数表、MSB/FMG 的底层库
   dev/                         开发与调试脚本
 data/                          数据集与格式文档，见 data/README.md
@@ -483,3 +482,6 @@ format documentation (Paramdex, ER-Save-Lib, Map for Goblins) is fetched by
 
 Requires the game, Node.js 18+ and Python 3.9+. Run `Setup.bat` then `Start Map.bat`
 on Windows, or `./setup-linux.sh` then `./start-map.sh` on Linux.
+
+**已移除（合规处理）**：此前有一个可选脚本 `tools/fetch_tips.py` 会从 Fextralife wiki 抓取路线说明文字。那些文字从未进入本仓库，但脚本本身会执行抓取，而 Fextralife 的条款禁止自动抓取，因此该脚本与 Setup 中对应步骤**已删除**。本仓库不含任何第三方文字，也不会自动抓取任何站点。
+**Removed for compliance**: an optional script `tools/fetch_tips.py` used to scrape route descriptions from the Fextralife wiki. That text was never in this repository, but the script itself performed the scrape, which their terms forbid, so the script and its Setup step have been deleted. This repository contains no third-party text and scrapes nothing.
