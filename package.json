@@ -1,0 +1,24 @@
+{
+  "name": "elden-ring-live-map-zh",
+  "version": "1.3.0",
+  "description": "EldenRingMap 简体中文汉化：地图标记名取自游戏官方 zhocn 文本，安装与启动脚本中英双语",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MiyauchiRenge/EldenRingMap-zh.git"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "extract-tiles": "python tools/extract_tiles.py",
+    "build-markers": "python tools/build_markers.py",
+    "setup": "python tools/extract_tiles.py && python tools/build_markers.py",
+    "inspect-save": "python tools/dev/er_save.py",
+    "start:live": "node server/index.js --live-memory",
+    "check-live": "python tools/live_memory.py --probe"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}

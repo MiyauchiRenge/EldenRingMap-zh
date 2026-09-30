@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elden Ring — 实时地图 / Live Map</title>
+<script>
+// Pick the reading language before the body renders, so the first paint is
+// already in the right language and does not flash English. js/i18n.js repeats
+// this in I18n.init(); keep the two in step.
+(function () {
+  try {
+    var saved = localStorage.getItem('er-map-lang');
+    // Chinese by default; the same rule as I18n.init(), kept in step so the
+    // first paint is already in the right language.
+    var lang = (saved === 'en' || saved === 'zh') ? saved : 'zh';
+    document.documentElement.lang = lang;
+  } catch (e) { /* private mode: keep the default */ }
+})();
+</script>
+<link rel="stylesheet" href="css/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🗺️</text></svg>">
+</head>
+<body>
+
+<div id="app">
+
+  <aside id="sidebar">
+    <header id="brand">
+      <h1>Elden Ring</h1>
+      <span class="sub" data-i18n="app.subtitle">实时地图 / live map</span>
+      <div id="lang-switch" class="lang-switch"></div>
+      <button type="button" id="sb-collapse" class="sb-collapse" data-i18n-title="sb.collapse" title="收起侧栏 / Collapse sidebar">«</button>
+    </header>
+
+    <section id="character" class="panel" data-panel="character">
+      <button type="button" class="panel-title" data-collapse>
+        <span data-i18n="panel.character">角色 / Character</span><span class="chev">▾</span>
+      </button>
+      <div class="panel-body">
+        <div class="char-head">
+          <div>
+            <div id="char-name">—</div>
+            <div id="char-meta" class="dim" data-i18n="app.noSave">未加载存档 / no save loaded</div>
+          </div>
+          <div id="live" class="live off" data-i18n-title="live.title">
+            <span class="dot"></span><span id="live-text" data-i18n="live.off">离线 / offline</span>
+          </div>
+        </div>
+        <div id="char-stats" class="stats"></div>
+        <div id="char-where" class="where dim"></div>
+        <div class="save-picker">
+          <label><span data-i18n="save.extension">存档类型 / Save type</span><select id="save-extension"></select></label>
+          <label><span data-i18n="save.character">角色 / Character</span><select id="save-character"></select></label>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="progress">
+      <button type="button" class="panel-title" data-collapse>
+        <span data-i18n="panel.progress">进度 / Progress</span><span class="chev">▾</span>
+      </button>
+      <div class="panel-body">
+        <div class="progress-head">
+          <span data-i18n="progress.overall">总计 / Overall</span>
+          <span id="progress-label" class="dim">0 / 0</span>
+        </div>
+        <div class="bar"><div id="progress-fill" class="fill"></div></div>
+        <div class="progress-head">
+          <span data-i18n="progress.layer">本层 / This layer</span>
+          <span id="progress-layer" class="dim">0 / 0</span>
+        </div>
+        <div class="bar"><div id="progress-layer-fill" class="fill"></div></div>
+      </div>
+    </section>
+
+    <section class="search-wrap panel" data-panel="search">
+      <button type="button" class="panel-title" data-collapse>
+        <span data-i18n="panel.search">搜索 / Search</span><span class="chev">▾</span>
+      </button>
+      <div class="panel-body">
+        <input id="search" type="search" data-i18n-placeholder="search.placeholder"
+               placeholder="搜索标记… / Search markers…" autocomplete="off" spellcheck="false">
+        <div id="search-results"></div>
+      </div>
+    </section>
+
+
+    <section id="layers" class="panel tight" data-panel="map">
+      <button type="button" class="panel-title" data-collapse>
+        <span data-i18n="panel.map">Map</span><span class="chev">▾</span>
+      </button>
+      <div class="panel-body">
+        <div id="layer-buttons" class="layer-buttons"></div>
+        <!-- A list of the game's own regions (data/regions.json), so a player can
+             jump to "Liurnia of the Lakes" instead of hunting for it on a 10,496px
+             map. The counts are the current layer's, like the legend's. -->
+        <div class="region-row">
+          <span data-i18n="panel.region">Region</span>
+        </div>
+        <div id="region-buttons" class="layer-buttons region-buttons"></div>
+      </div>
+    </section>
+
+    <section id="categories" class="panel tight grow" data-panel="categories">
+      <div class="panel-title">
+        <button type="button" class="panel-title-txt" data-collapse>
+          <span data-i18n="panel.categories">Categories</span><span class="chev">▾</span>
+        </button>
+        <button type="button" id="toggle-all" class="mini" data-i18n="panel.selectNone">none</button>
+      </div>
+      <div class="panel-body" id="category-body">
+        <div id="category-list"></div>
+      </div>
+    </section>
+
+    <section class="panel tight" data-panel="options">
+      <button type="button" class="panel-title" data-collapse>
+        <span data-i18n="panel.options">Options</span><span class="chev">▾</span>
+      </button>
+      <div class="panel-body">
+        <label class="row-check">
+          <input type="checkbox" id="hide-found">
+          <span data-i18n="opt.hideFound">Hide found</span>
+        </label>
+        <label class="row-check">
+          <input type="checkbox" id="show-labels" checked>
+          <span data-i18n="opt.showLabels">Show labels when zoomed</span>
+        </label>
+        <label class="row-check">
+          <input type="checkbox" id="show-icons" checked>
+          <span data-i18n="opt.showIcons">Use the game's map icons</span>
+        </label>
+      </div>
+    </section>
+
+    <footer id="foot">
+      <span id="foot-text" class="dim"></span>
+      <!-- Shown only when the page came from localhost; the server refuses the
+           request on any other bind. See /api/shutdown in server/index.js. -->
+      <button type="button" id="stop-server" class="mini stop-server hidden"
+              data-i18n="stop.button" data-i18n-title="stop.title"
+              title="退出服务 / Quit server">退出服务</button>
+    </footer>
+  </aside>
+
+  <main id="stage">
+    <canvas id="map"></canvas>
+
+    <button type="button" id="sb-expand" class="sb-expand" data-i18n-title="sb.expand" title="展开侧栏 / Expand sidebar" aria-hidden="true">»</button>
+
+    <div id="zoom-controls">
+      <button type="button" id="zoom-in" data-i18n-title="zoom.in" title="放大 / Zoom in">+</button>
+      <button type="button" id="zoom-out" data-i18n-title="zoom.out" title="缩小 / Zoom out">−</button>
+      <button type="button" id="zoom-fit" data-i18n-title="zoom.fit" title="适应窗口 / Fit map">⤢</button>
+      <button type="button" id="goto-player" data-i18n-title="zoom.player" title="定位到最后存档 / Centre on last save">◎</button>
+    </div>
+
+    <div id="tooltip" class="hidden"></div>
+    <div id="popup" class="hidden"></div>
+    <div id="toasts"></div>
+    <div id="hint" class="hint" data-i18n="hint.controls">拖动平移 · 滚轮缩放 / drag to pan · scroll to zoom</div>
+  </main>
+
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/map.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
