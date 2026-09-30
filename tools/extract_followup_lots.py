@@ -37,7 +37,7 @@ TABLE_OF_KIND = {1: "GoodsName", 2: "WeaponName", 3: "ProtectorName",
                  4: "AccessoryName", 5: "GemName"}
 DROP_CAT = {1: "drop_items", 2: "drop_weapons", 3: "drop_armour",
             4: "drop_talismans", 5: "drop_items"}
-MAX_FOLLOW = 7
+MAX_FOLLOW = 64      # follow until the run breaks (documented chain)
 GATHER_FIELD = 0x260
 LADDER = [
     (re.compile(r"^墓地铃兰【(\d+)】$"), "glovewort_grave_%d"),
@@ -176,7 +176,8 @@ def main():
         for k in range(1, MAX_FOLLOW + 1):
             items = lots.get(lot + k)
             if not items:
-                continue
+                break      # the documented chain stops at the first missing row
+
             src = ms[0]
             iid, kind, _num = items[0]
             nm = name_of(iid, kind)
