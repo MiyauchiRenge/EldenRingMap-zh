@@ -396,6 +396,17 @@ def main():
                     if lrow is None:
                         continue
                     flag = lot_def.get(lrow.data, "getItemFlagId")
+                    if not flag and which == "enemy":
+                        # A flagged enemy lot need not be reachable from NpcParam at all.
+                        # The DLC picker enemies hold lot X while the row that actually
+                        # awards the item is X + 1 (checked: the three sibling lots behind
+                        # 灵依墓地铃兰【２】/【３】 reproduce the sibling project's NPC ids and,
+                        # after projection, its coordinates to 0.0 px). So look at X + 1.
+                        sib = enemy_lots.get(lot_id + 1)
+                        if sib is not None and lot_def.get(sib.data, "getItemFlagId"):
+                            stats["sibling lot reward (lot+1)"] += 1
+                            lrow, lot_id, flag = sib, lot_id + 1, lot_def.get(
+                                sib.data, "getItemFlagId")
                     if not flag:
                         stats[f"farmable {which} lot"] += 1
                         continue
@@ -665,8 +676,14 @@ def main():
         else:
             # One Ash of War is not worth a legend row of its own, and its name says
             # what it is ("战灰：重力"), so category 5 goes in with the items.
-            drop_cat = {1: "drop_items", 2: "drop_weapons", 3: "drop_armour",
-                        4: "drop_talismans"}.get(cat, "drop_items")
+            # A ladder material keeps its ladder row: the reward is otherwise sorted by
+            # kind, which would file 墓地铃兰【３】 under "items" and leave the glovewort
+            # ladder incomplete. Pickups of the same items already use the ladder.
+            _ladder = categorise(iid, item_name("en", iid, cat) or "", cat)
+            drop_cat = (_ladder if _ladder.startswith(("glovewort_", "smithing_stone_",
+                                                      "somber_stone_"))
+                        else {1: "drop_items", 2: "drop_weapons", 3: "drop_armour",
+                              4: "drop_talismans"}.get(cat, "drop_items"))
         drop_cats[drop_cat] += 1
         # The giver's own name where the game has one; 74 of the 133 rewards sit on
         # an enemy whose NpcName row is the "DLC dummy" placeholder, and claiming a
