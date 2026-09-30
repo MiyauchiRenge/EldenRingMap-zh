@@ -483,3 +483,20 @@ format documentation (Paramdex, ER-Save-Lib, Map for Goblins) is fetched by
 
 Requires the game, Node.js 18+ and Python 3.9+. Run `Setup.bat` then `Start Map.bat`
 on Windows, or `./setup-linux.sh` then `./start-map.sh` on Linux.
+
+### 15. 事件脚本掉落（EMEVD 参数区四元组）
+
+游戏把"一次性奖励"的一部分写在 EMEVD 里。实测发现：**参数区直接存着四元组**
+
+```
+[ … , 事件 id, 实体 id, 实体旗标, lot id, 浮点数… ]
+```
+
+于是奖励物品（lot）能与**发放它的地图实体**对应起来，而实体的坐标来自 MSB 部件里的
+实体 id（部件 `+0x60` → 实体数据 `+0x00`）。过滤器取"实体 == 旗标 且 事件 id > 1000"：
+在同基准上实测 **命中 189 条、实体 100% 正确**（放宽到"只要 lot 在第四位"能到 65% 覆盖，
+但精度掉到 88%，因此不作为数据来源）。本层由 `tools/extract_emevd_drops.py` 生成，
+分类沿用"角色掉落"的道具/武器/防具/护符分档，计入收集进度。
+
+自带一个不依赖任何外部基准的自检：`python tools/erlib/emevd.py` —— 逐文件核对
+"解析出的指令数 == 文件头声明的指令数"（本机 543 个事件文件、95,727 条指令全部吻合）。

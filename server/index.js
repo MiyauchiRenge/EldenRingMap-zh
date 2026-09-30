@@ -135,12 +135,13 @@ const pieceData = loadJson(path.join(DATA, 'pieces.json'), { markers: [] });
 const npcData = loadJson(path.join(DATA, 'npcs.json'), { markers: [] });
 const dropData = loadJson(path.join(DATA, 'drops.json'), { markers: [] });
 const bossDropData = loadJson(path.join(DATA, 'boss-drops.json'), { markers: [] });
+const emevdDropData = loadJson(path.join(DATA, 'emevd-drops.json'), { markers: [] });
 // Farm spots (tools/extract_farm_nodes.py): enemy placements carrying a farmable
 // lot. Optional like the rest - a fresh clone has no farm.json until it is run.
 const farmData = loadJson(path.join(DATA, 'farm.json'), { markers: [] });
 const MARKERS = [...(markerData.markers || []), ...(itemData.markers || []),
                  ...(pieceData.markers || []), ...(npcData.markers || []),
-                 ...(dropData.markers || []), ...(bossDropData.markers || []),
+                 ...(dropData.markers || []), ...(bossDropData.markers || []), ...(emevdDropData.markers || []),
                  ...(farmData.markers || [])];
 const FLAG_MARKERS = MARKERS.filter((m) => m.flag || (m.flags && m.flags.length));
 
