@@ -79,12 +79,7 @@ EXTRA_ITEM_ICONS = {
 # these ids). Item sprites are otherwise extracted on demand - only the iconIds
 # that markers carry - and these four belong to items no marker has: a script
 # reward, a hat, a talisman and a Remembrance. Ids only, no artwork here.
-LEGEND_ICON_IDS = {
-    10089: "Dark Moon Greatsword (character-weapon legend row)",
-    14740: "Snow Witch Hat (character-armour legend row)",
-    18090: "Stargazer Heirloom (character-talisman legend row)",
-    163: "Remembrance (boss-drop legend row)",
-}
+LEGEND_ICON_IDS = {163, 2100, 2101, 2102, 2103, 2104, 2105, 2106, 2107, 2108, 2109, 2110, 2111, 2112, 2113, 2114, 2115, 2116, 2117, 2118, 2119, 10089, 14740, 18090}
 
 
 def sprite_name(icon_id):

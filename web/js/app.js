@@ -1525,7 +1525,18 @@ function switchMaster(id) {
 // The sprites are extracted from the user's own game (tools/extract_icons.py names
 // the same four ids so they are extracted even though no marker carries them).
 const CAT_ICON = { armour: 14800, drop_weapons: 10089, drop_armour: 14740,
-                   drop_talismans: 18090, boss_drops: 163 };
+                   drop_talismans: 18090, boss_drops: 163,
+                   // Each glovewort level shows its own item icon (10900+n -> 2100+n).
+  glovewort_grave_1: 2100, glovewort_ghost_1: 2110,
+  glovewort_grave_2: 2101, glovewort_ghost_2: 2111,
+  glovewort_grave_3: 2102, glovewort_ghost_3: 2112,
+  glovewort_grave_4: 2103, glovewort_ghost_4: 2113,
+  glovewort_grave_5: 2104, glovewort_ghost_5: 2114,
+  glovewort_grave_6: 2105, glovewort_ghost_6: 2115,
+  glovewort_grave_7: 2106, glovewort_ghost_7: 2116,
+  glovewort_grave_8: 2107, glovewort_ghost_8: 2117,
+  glovewort_grave_9: 2108, glovewort_ghost_9: 2118,
+                   glovewort_grave_great: 2109, glovewort_ghost_great: 2119 };
 
 /**
  * The iconId that identifies each category: the one most of its markers carry.
