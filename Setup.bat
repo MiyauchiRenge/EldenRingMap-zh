@@ -61,7 +61,7 @@ goto :no_python
 %PY% -m pip --version >nul 2>nul
 if errorlevel 1 goto :no_pip
 
-echo   [1/11] Installing Python packages ...
+echo   [1/13] Installing Python packages ...
 echo         [正在安装 Python 依赖包 / Installing Python packages]
 %PY% -m pip install --quiet --disable-pip-version-check zstandard pycryptodome pillow texture2ddecoder numpy
 if errorlevel 1 goto :pip_failed
@@ -71,35 +71,35 @@ rem documents, not game files: they are not shipped in this repository, because
 rem they are someone else's writing. They have to be here before anything reads
 rem the params, so this runs first - and it is the only step that needs network
 rem access besides the optional route descriptions at the end.
-echo   [2/11] Fetching the community format documents ...
+echo   [2/13] Fetching the community format documents ...
 echo         [正在获取社区格式文档（paramdefs 等）/ Fetching the community format documents]
 %PY% tools\fetch_docs.py
 if errorlevel 1 goto :docs_failed
 
-echo   [3/11] Extracting map tiles from your game ^(a couple of minutes^) ...
+echo   [3/13] Extracting map tiles from your game ^(a couple of minutes^) ...
 echo         [正在从你的游戏提取地图底图（瓦片），约需几分钟 / Extracting map tiles from your game]
 if "%GAMEDIR%"=="" %PY% tools\extract_tiles.py
 if not "%GAMEDIR%"=="" %PY% tools\extract_tiles.py --game-dir "%GAMEDIR%"
 if errorlevel 1 goto :extract_failed
 
-echo   [4/11] Building the marker dataset ...
+echo   [4/13] Building the marker dataset ...
 echo         [正在生成地图标记数据 / Building the marker dataset]
 if "%GAMEDIR%"=="" %PY% tools\build_markers.py
 if not "%GAMEDIR%"=="" %PY% tools\build_markers.py "%GAMEDIR%"
 if errorlevel 1 goto :markers_failed
 
-echo   [5/11] Indexing the game's map files ...
+echo   [5/13] Indexing the game's map files ...
 echo         [正在索引游戏地图文件 / Indexing the game's map files]
 %PY% tools\dev\enumerate_maps.py >nul
 if errorlevel 1 goto :items_failed
 
-echo   [6/11] Extracting item locations, merchants and one-time drops ^(this reads 864 map files^) ...
+echo   [6/13] Extracting item locations, merchants and one-time drops ^(this reads 864 map files^) ...
 echo         [正在提取道具位置、商人与角色掉落 / Extracting item locations, merchants and one-time drops]
 if "%GAMEDIR%"=="" %PY% tools\extract_items.py
 if not "%GAMEDIR%"=="" %PY% tools\extract_items.py --game-dir "%GAMEDIR%"
 if errorlevel 1 goto :items_failed
 
-echo   [7/11] Extracting the game's map and item icons ...
+echo   [7/13] Extracting the game's map and item icons ...
 echo         [正在提取游戏地图图标与物品图标 / Extracting the game's map and item icons]
 if "%GAMEDIR%"=="" %PY% tools\extract_icons.py
 if not "%GAMEDIR%"=="" %PY% tools\extract_icons.py --game-dir "%GAMEDIR%"
@@ -108,14 +108,14 @@ if errorlevel 1 goto :icons_failed
 rem Rune and Ember Pieces are Reforged collectibles - there are none to find in
 rem an unmodded game, so this step only runs when MODDIR is set.
 if "%MODDIR%"=="" goto :skip_pieces
-echo   [8/11] Extracting Reforged rune/ember pieces ...
+echo   [8/13] Extracting Reforged rune/ember pieces ...
 echo         [正在提取 Reforged 卢恩/余烬碎片 / Extracting Reforged rune/ember pieces]
 if "%GAMEDIR%"=="" %PY% tools\extract_pieces.py --mod-dir "%MODDIR%"
 if not "%GAMEDIR%"=="" %PY% tools\extract_pieces.py --game-dir "%GAMEDIR%" --mod-dir "%MODDIR%"
 if errorlevel 1 goto :pieces_failed
 goto :done_pieces
 :skip_pieces
-echo   [9/11] Reforged rune/ember pieces - skipped ^(MODDIR not set^)
+echo   [9/13] Reforged rune/ember pieces - skipped ^(MODDIR not set^)
 echo         [已跳过 Reforged 卢恩/余烬碎片，未设置 MODDIR / skipped - MODDIR not set]
 :done_pieces
 
@@ -124,11 +124,11 @@ rem step is the one exception, so it asks before it runs.
 if /i "%TIPS%"=="yes" goto :do_tips
 if /i "%TIPS%"=="no" goto :skip_tips
 echo.
-echo   [10/11] One-time drops from the event scripts ^(adds the EMEVD drop layer^) ...
+echo   [10/13] One-time drops from the event scripts ^(adds the EMEVD drop layer^) ...
 if "%GAMEDIR%"=="" %PY% tools\extract_emevd_drops.py
 if not "%GAMEDIR%"=="" %PY% tools\extract_emevd_drops.py --game-dir "%GAMEDIR%"
 if errorlevel 1 echo   Note: the EMEVD drop layer was skipped - the map works without it.
-echo   [11/11] Marking where farmable enemy drops come from ^(adds the farm-spot layer^) ...
+echo   [11/13] Marking where farmable enemy drops come from ^(adds the farm-spot layer^) ...
 if "%GAMEDIR%"=="" %PY% tools\extract_farm_nodes.py --all-unmarked
 if not "%GAMEDIR%"=="" %PY% tools\extract_farm_nodes.py --all-unmarked --game-dir "%GAMEDIR%"
 if errorlevel 1 echo   Note: farm spots were skipped - the map works without them.
@@ -307,12 +307,12 @@ echo   请确认 MODDIR 指向包含 regulation.bin 的 Reforged 模组文件夹
 echo.
 pause & goto :eof
 
-echo   [X/N] Extracting gatherables ^(fireflies, mushrooms, bones... the +0x260 field^) ...
+echo   [12/13] Extracting gatherables ^(fireflies, mushrooms, bones... the +0x260 field^) ...
 if "%GAMEDIR%"=="" %PY% tools\extract_gatherables.py
 if not "%GAMEDIR%"=="" %PY% tools\extract_gatherables.py --game-dir "%GAMEDIR%"
 if errorlevel 1 echo   Note: the gatherable layer was skipped - the map works without it.
 
-echo   [X/N] Adding the follow-up items of sequential lots ^(the documented lot+1 chain^) ...
+echo   [13/13] Adding the follow-up items of sequential lots ^(the documented lot+1 chain^) ...
 if "%GAMEDIR%"=="" %PY% tools\extract_followup_lots.py
 if not "%GAMEDIR%"=="" %PY% tools\extract_followup_lots.py --game-dir "%GAMEDIR%"
 if errorlevel 1 echo   Note: the follow-up layer was skipped - the map works without it.
