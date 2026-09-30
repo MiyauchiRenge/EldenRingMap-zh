@@ -306,3 +306,13 @@ echo   卢恩/余烬碎片提取失败。地图仍可使用，只是不会有碎
 echo   请确认 MODDIR 指向包含 regulation.bin 的 Reforged 模组文件夹。
 echo.
 pause & goto :eof
+
+echo   [X/N] Extracting gatherables ^(fireflies, mushrooms, bones... the +0x260 field^) ...
+if "%GAMEDIR%"=="" %PY% tools\extract_gatherables.py
+if not "%GAMEDIR%"=="" %PY% tools\extract_gatherables.py --game-dir "%GAMEDIR%"
+if errorlevel 1 echo   Note: the gatherable layer was skipped - the map works without it.
+
+echo   [X/N] Adding the follow-up items of sequential lots ^(the documented lot+1 chain^) ...
+if "%GAMEDIR%"=="" %PY% tools\extract_followup_lots.py
+if not "%GAMEDIR%"=="" %PY% tools\extract_followup_lots.py --game-dir "%GAMEDIR%"
+if errorlevel 1 echo   Note: the follow-up layer was skipped - the map works without it.
