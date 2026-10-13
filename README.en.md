@@ -164,6 +164,24 @@ group.
 
 ### Data and decisions
 
+* **Shop attribution has a hard ceiling (recorded so the investigation is not repeated)**: none of the
+  1,296 `ShopLineupParam` rows carries a shop or merchant field (`NpcParam` has none either) and no
+  shop-to-range link table exists among the 194 parameters; the 358 readable talk scripts declare only
+  8 ranges (all crafting-kit shops, covering 147 rows); grouping the rows by `eventFlag_forStock` gives
+  785 groups, 747 of them single-row, so the stock flags are per item rather than per shop. The archive
+  index stores path hashes only, so menu ESD containers cannot be enumerated and all six candidate paths
+  are absent. The one structural clue is that our six ordinary shelves sit inside **25-row-aligned blocks**
+  (`100500`/`100525`/`100600`/`100725`/`100825`/`102270`), which would enumerate about 52 shelf blocks, but a
+  block carries no ownership - and without an owner there is no position to place. The shop layer therefore
+  stays "only what can be attributed": 8 shelves plus 2 unowned (`600014`, `1600115`). Closing the rest
+  would need a hand-checked table (one line per block naming its merchant), which no automatic pass can
+  produce. The findings are in section 8 of [docs/机制.md](docs/机制.md).
+* **One of my own claims corrected**: `extract_farm_nodes.py` documents that it lists only items the game
+  places nowhere, so "244 flagged enemy-drop lots versus 30 registered" is **by design, not a gap**.
+  Verified: of the 244, only **2** are neither registered nor represented elsewhere (`70010000` -> item
+  386, nameless and probably cut content; `621000708` -> item 15420, whose text reads "Found by killing
+  Albinaurics"). Whether the latter really is missing still needs the marker's lot resolved back to item
+  ids, which `items.json` markers do not carry - the probe could not see it.
 * **Evidence priority fixed for quest rewards (an unanchorable match no longer hides a concrete source)**:
   the decision chain used to downgrade a matched-but-unanchorable event record to "unreferenced", which
   also skipped the shop check that followed, so evidence was lost. Now the first match that **can be
