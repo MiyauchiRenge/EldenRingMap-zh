@@ -13,7 +13,8 @@ This version collects evidence instead, from the game's own files, and records i
   2. event-record       the lot appears in an EMEVD parameter record shaped (type, entity, entityFlag,
                         lot) with entity == entityFlag > 1000. That is the shape the EMEVD drop layer
                         already uses, and it finds 199/199 lots that are independently known to be
-                        granted by an event.
+                        granted by an event. The record shape is specific enough to trust for any lot
+                        size, so unlike check 1 this one is not restricted to large ids.
   3. event-flag         an EMEVD instruction carries the item's own getItemFlagId, so that event is what
                         sets the flag the item comes with.
   4. shop               a ShopLineupParam row sells the item; the marker goes on the merchant that owns
@@ -199,12 +200,13 @@ def scan_events(dvd, helper, lots, flags):
                     key = "instructions" if value in lots else "flagInstructions"
                     ev[value][key].append(rec)
                 at = raw.find(needle, at + 1)
-        # parameter records: (type, entity, entityFlag, lot)
+        # parameter records: (type, entity, entityFlag, lot). The shape is what makes this trustworthy,
+        # not the size of the id, so small lots are accepted here (check 1 cannot be).
         blob = raw[h["paramOffset"]:]
         words = list(struct.unpack_from("<%di" % (len(blob) // 4), blob, 0))
         for k in range(len(words) - 3):
             _type, ent, eflag, lot = words[k:k + 4]
-            if lot in lots and lot >= MIN_TRUSTED_LOT and ent == eflag and ent > 1000:
+            if lot in lots and ent == eflag and ent > 1000:
                 ev[lot]["records"].append({"file": name, "entity": ent, "flag": eflag})
     print("event files read: %d" % files_read)
     return ev
@@ -359,14 +361,18 @@ def main():
         sold = [s for s in (shops.get(iid) or [])
                 if s["equipType"] == kind_to_equip_type.get(c["kind"])]
         lot_maps = lot_map_candidates(lot, maps_with_anchor)
-        verdict = None
-        anchor = None
-        evidence = None
-        if ins:
-            verdict = "event-instruction"
+        # Evidence classes, strongest first, each producing (verdict, evidence, anchor). A class that
+        # matches but cannot be anchored must not shadow a later class that can: the first anchored match
+        # wins, and if none of them can be anchored the strongest match is registered without coordinates
+        # rather than being called unreferenced (that downgrade used to hide the shop evidence behind an
+        # unanchorable event record).
+        def ev_instruction():
+            if not ins:
+                return None
             hit = ins[0]
             evidence = "m=%s bank=%d id=%d args=%s" % (hit["file"], hit["bank"], hit["id"],
-                                                        hit["args"])
+                                                       hit["args"])
+            anchor = None
             for value in hit["args"]:
                 if value in ent_pos:
                     anchor = ("entity", ent_pos[value])
@@ -374,20 +380,28 @@ def main():
             if anchor is None:
                 a = map_anchor.get(hit["file"])
                 anchor = ("map:" + hit["file"], a[0]) if a else None
-        elif recs:
-            verdict = "event-record"
+            return ("event-instruction", evidence, anchor)
+
+        def ev_record():
+            if not recs:
+                return None
             hit = recs[0]
             evidence = "m=%s entity=%d flag=%d" % (hit["file"], hit["entity"], hit["flag"])
+            anchor = None
             if hit["entity"] in ent_pos:
                 anchor = ("entity", ent_pos[hit["entity"]])
             else:
                 a = map_anchor.get(hit["file"])
                 anchor = ("map:" + hit["file"], a[0]) if a else None
-        elif flag_ins:
-            verdict = "event-flag"
+            return ("event-record", evidence, anchor)
+
+        def ev_flag():
+            if not flag_ins:
+                return None
             hit = flag_ins[0]
             evidence = "m=%s bank=%d id=%d args=%s" % (hit["file"], hit["bank"], hit["id"],
-                                                        hit["args"])
+                                                       hit["args"])
+            anchor = None
             for value in hit["args"]:
                 if value in ent_pos:
                     anchor = ("entity", ent_pos[value])
@@ -395,31 +409,53 @@ def main():
             if anchor is None:
                 a = map_anchor.get(hit["file"])
                 anchor = ("map:" + hit["file"], a[0]) if a else None
-        elif sold:
-            verdict = "shop"
+            return ("event-flag", evidence, anchor)
+
+        def ev_shop():
+            if not sold:
+                return None
             row = sold[0]
             shelf = shelf_by_row.get(row["row"])
             evidence = "ShopLineupParam row %d (equipType %s, price %s, qty %s)" % (
                 row["row"], row["equipType"], row["price"], row["qty"])
+            anchor = None
             if shelf and shelf.get("px") is not None:
                 anchor = ("shelf", shelf)
                 if shelf.get("names"):
                     evidence += "；货架归 %s" % shelf["names"]["zh"]
-        elif lot_maps:
-            verdict = "lot-map"
+            return ("shop", evidence, anchor)
+
+        def ev_lot_map():
+            if not lot_maps:
+                return None
             mid = lot_maps[0]
             a = map_anchor.get(mid)
             evidence = "lot %d -> %s%s" % (lot, mid,
                                            "" if len(lot_maps) == 1
                                            else "（%d 张图共用该编号位）" % len(lot_maps))
-            anchor = ("map:" + mid, a[0]) if a else None
-        elif START_BLOCK[0] <= flag < START_BLOCK[1]:
-            verdict = "starting"
+            return ("lot-map", evidence, ("map:" + mid, a[0]) if a else None)
+
+        def ev_starting():
+            if START_BLOCK[0] <= flag < START_BLOCK[1]:
+                return ("starting", None, None)
+            return None
+
+        matches = [m for m in (ev_instruction(), ev_record(), ev_flag(), ev_shop(), ev_lot_map(),
+                               ev_starting()) if m]
+        anchored = [m for m in matches if m[2] is not None]
+        # A shelf or the starting block is a concrete source even without a position, so it outranks an
+        # event record that could not be anchored: "a merchant sells it" is more useful than "some event
+        # mentions it".
+        concrete = [m for m in matches if m[0] in ("shop", "starting")]
+        if anchored:
+            verdict, evidence, anchor = anchored[0]
+        elif concrete:
+            verdict, evidence, anchor = concrete[0]
+        elif matches:
+            verdict, evidence, anchor = matches[0]
+            evidence = (evidence or "") + "；该证据所在的事件没有锚点，因此不落点"
         else:
-            verdict = "unreferenced"
-        if verdict in ("event-instruction", "event-record", "event-flag") and anchor is None:
-            verdict = "unreferenced"
-            evidence = (evidence or "") + " (no anchor for that map)"
+            verdict, evidence, anchor = "unreferenced", None, None
 
         classes[verdict] += 1
         blocks[verdict][flag // 1000 * 1000] += 1

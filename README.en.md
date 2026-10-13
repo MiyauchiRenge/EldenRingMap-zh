@@ -55,7 +55,7 @@ The measured per-file difference (upstream `48f42e57` has 143 files, this reposi
   `key = instance << 15 | state`, `model = 10000000 + AEG id`, grouped per map.
 * **Quest and event rewards**: 446 lots whose flag is set in the save but which no world object references. Each
   was classified from evidence (event instruction, event record, shop shelf, map digits in the lot id,
-  starting block, or none): 23 have coordinates and 423 carry a verdict and a stated reason.
+  starting block, or none): 26 have coordinates and 420 carry a verdict and a stated reason.
 * **Verification results**: all 321/321 `FOEG` nodes are present on the map, no missing marker against
   the save's flags, 114/114 gatherable icons present, coordinates agree within 0.2 px. Scadutree
   Fragments: 46 locations / 50 items; Revered Spirit Ashes: 23 locations / 25 items (some locations
@@ -164,7 +164,23 @@ group.
 
 ### Data and decisions
 
-* **Four extractors read only the Chinese message table, so their English names were Chinese**: 
+* **Evidence priority fixed for quest rewards (an unanchorable match no longer hides a concrete source)**:
+  the decision chain used to downgrade a matched-but-unanchorable event record to "unreferenced", which
+  also skipped the shop check that followed, so evidence was lost. Now the first match that **can be
+  anchored** wins; when none can, a concrete source (sold by a merchant, held from the start) outranks an
+  unanchorable event record; only when there is neither is the entry recorded as source-not-identified.
+  The EMEVD **structured record** check is also no longer limited by lot size (the shape
+  `entity == entityFlag > 1000` is specific enough; the raw numeric search still only trusts six-digit
+  lots). Measured: placed **23 -> 26**, registered 423 -> **420**, of which source-not-identified
+  347 -> **333**, sold by a merchant 69 -> 68 (one entry gained stronger positional evidence), held from
+  the start 7 -> 8, plus 2 event instructions, 6 event flags and 3 event records; markers with
+  coordinates went from 28,177 to **28,180**.
+* **The verdict label now says what it means**: `verdict.unreferenced` changed from "数据中无引用" to
+  "**未定位来源**" (English "no reference in the data" to "source not identified"). These entries do
+  **not** mean the game has no source: 346 of the 347 lots live in `ItemLotParam_map`, all 347 carry a
+  flag, and only one is pointed at by an NpcParam (so they are not enemy drops) - most of them are quest
+  rewards. What is missing is the script's **proof**, from the game data it can read, of who grants them.
+* **Four extractors read only the Chinese message table, so their English names were Chinese**:
   `extract_gather_nodes.py`, `extract_followup_lots.py`, `extract_emevd_drops.py` and
   `extract_emevd_rewards.py` read `/msg/zhocn/` and then wrote the Chinese string into both `names.en`
   and `names.zh`, which made **22,905 markers** (19,263 gatherable nodes, 3,369 follow-up items, 272
@@ -173,12 +189,12 @@ group.
   markers whose English name held Chinese **22,905 -> 0**, and a per-marker comparison confirms the id,
   category, coordinates, flag, `num` and Chinese name are **unchanged** (only `names.en` differs):
   `托莉娜睡莲` -> `Trina's Lily`.
-* **A "Registered (no coordinates)" list**: the 423 rows of `data/quest-rewards-unplaced.json` and the
+* **A "Registered (no coordinates)" list**: the 420 rows of `data/quest-rewards-unplaced.json` and the
   two shop shelves in `data/shop-stock.json` whose owner no script declares (Cracked Pot ×2) were filtered
   out by `px != null` when the client loaded, so they were invisible - which is also why the merchant bell
   bearings look incomplete: **21 of them have no coordinates** (Smithing-Stone Miner's [1] and [4],
   Glovewort Picker's [1] and [2], Somber Smithing-Stone Miner's [1] and [2], among others) and exist only
-  in that registry. The sidebar now lists all **425 entries** (name plus the verdict the extractor
+  in that registry. The sidebar now lists all **422 entries** (name plus the verdict the extractor
   recorded: sold by a merchant / no reference in the data / held from the start, falling back to the
   category when there is no verdict), with the count in the title and a re-render on every language
   switch. They have no world object and no coordinates, so they are neither drawn nor navigable; a list is
@@ -195,15 +211,15 @@ group.
   fallback chain (hand-written label, then the bare item key in i18n, then a marker's own game name),
   which is where the Chinese material names come from. Measured: CATS rows 122 -> **201**, markers with
   no row **18,837 -> 0**, and the labels resolve to 遗迹石 / 罗亚果实 in Chinese and "Ruin Fragment" /
-  "Rowa Fruit" in English. `unplaced` (the 423 registered rewards without coordinates) deliberately gets
+  "Rowa Fruit" in English. `unplaced` (the 420 registered rewards without coordinates) deliberately gets
   no row - its markers have no position, so an empty row would only mislead; the list section below is
   where they belong.
 
 * **Per-entry verdicts for the 446 quest and event rewards**: `tools/extract_quest_rewards.py` is now
   evidence-driven instead of deriving a map from the lot number. Result: 71 sold on a merchant shelf,
   20 whose lot id carries a map, 1 event-script record, 7 held from the start (flag block 60000-60999)
-  and 347 with no reference anywhere in the game data. 23 of them have coordinates (the owning merchant,
-  or the boss or grace of the corresponding map); the other 423 record their verdict, flag block and
+  and 333 with no reference anywhere in the game data. 26 of them have coordinates (the owning merchant,
+  or the boss or grace of the corresponding map); the other 420 record their verdict, flag block and
   reason in `data/quest-rewards-unplaced.json`. Evidence and checks: the EMEVD record shape
   `(type, entity, entityFlag, lot)` holds for 199/199 lots independently known to be event-granted; the
   `ItemLotParam_map` numbering `<lead><area:2><grid:2><seq:4>` matches 1,669 of the 6,958 lots already
@@ -255,7 +271,7 @@ group.
 * **Same-spot list and boss cluster exemption**: `pick()` collects a group by screen distance (6 px
   threshold) and the card gained an "also here" list whose entries are individually selectable in a fixed
   order with the current one boxed; `cluster()` keeps bosses outside the bubbles. Measured: grouping by
-  same map layer and pixel distance <= 3, the 28,177 placed markers form 2,651 overlapping groups (8,025
+  same map layer and pixel distance <= 3, the 28,180 placed markers form 2,651 overlapping groups (8,028
   markers), 886 of which are exactly co-located.
 * **Regions and nearest place names**: added `WorldMapPlaceNameParam` parsing and `data/regions.json`
   (9 regions with rectangles); markers and the player marker show "region (nearest place)". The region is
