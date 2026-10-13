@@ -252,6 +252,17 @@
 
 ### 脚本与文档
 
+* **修正界面文本的五处错块，页签标题随语言切换**：`web/js/i18n.js` 的 **en 块**里有五个键各被定义了
+  两次，第二次的值是中文（`cat.pots_n_perfumes`、`cat.shop_stock`、`cat.perfume_bottle`、
+  `cat.pots_cracked`、`cat.pots_great_cracked`），而 JavaScript 后键覆盖前键，导致这五个分类
+  **中英文界面都显示中文**；现把这五个中文值移入 zh 块（该块原先根本没有这些键），en 块只保留英文。
+  页签标题改为随语言切换（`<title data-i18n="app.title">`，静态默认值取中文），
+  `<html lang>` 由 `en` 改为 `zh`；搜索框本就带 `data-i18n-placeholder`，其双语文字只是脚本执行前的
+  默认值，无需改动。
+* **新增 i18n 块检查**（`_check_i18n.py`，随自查运行）：en 块不得含中文（含则覆盖英文标签，
+  且 zh 会回退到它）、任一块内不得有重复键、zh 必须覆盖 en 的每个键（唯一例外是 75 个
+  `gather_<物品 id>` 英文材料名兜底键）。当前结果：**en 318 键 / zh 243 键，只有 en 的 75 个全是
+  gather_ 兜底，只有 zh 的 0 个，en 块中文 0 处，重复键 0 个**。
 * **客户端模块化**：`web/js/app.js`（2,159 行）按依赖方向拆分为 `catalog.js`（分类与视觉常量，
   18 个导出）、`core.js`（状态、助手与进度口径，18 个）、`region.js`（地区与最近地名，8 个）与入口
   `app.js`；`index.html` 改用 `type="module"`，`i18n.js` 与 `map.js` 仍为传统脚本（先执行，

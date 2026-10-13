@@ -316,6 +316,21 @@ group.
 
 ### Scripts and documents
 
+* **Five UI labels were defined in the wrong block, and the tab title now follows the language**:
+  the **en** block of `web/js/i18n.js` defined five keys twice, the second time with a Chinese value
+  (`cat.pots_n_perfumes`, `cat.shop_stock`, `cat.perfume_bottle`, `cat.pots_cracked`,
+  `cat.pots_great_cracked`), and JavaScript keeps the last definition - so those five categories showed
+  Chinese in **both** languages. The Chinese values moved into the `zh` block (which lacked the keys
+  entirely) and `en` keeps the English ones. The tab title now switches with the language
+  (`<title data-i18n="app.title">`, with a Chinese static default) and `<html lang>` changed from `en` to
+  `zh`. The search box already carried `data-i18n-placeholder`; its bilingual text is only the pre-script
+  default, so it needed no change.
+* **i18n block check added** (`_check_i18n.py`, run with the other self-checks): the `en` block must carry
+  no Chinese (it would override the English label, and `zh` falls back to it), neither block may define a
+  key twice, and `zh` must cover every `en` key - the only exception being the 75 `gather_<item id>`
+  English material names kept as a fallback. Current result: **318 en keys / 243 zh keys, 75 English-only
+  keys all of them `gather_` fallbacks, 0 Chinese-only keys, 0 Chinese strings in the `en` block,
+  0 duplicate keys**.
 * **Client modularisation**: `web/js/app.js` (2,159 lines) was split along its dependency direction into
   `catalog.js` (categories and visual constants, 18 exports), `core.js` (state, helpers and the progress
   policy, 18) and `region.js` (regions and nearest place names, 8) behind an entry `app.js`;
