@@ -1,0 +1,149 @@
+本仓库包含来源不同的若干部分，适用不同条款。全文不构成对上游作者的授权，
+也不代表 FromSoftware / Bandai Namco。
+This repository contains parts of different origins, under different terms. Nothing
+below grants rights to the upstream code, and nothing here speaks for FromSoftware or
+Bandai Namco.
+
+================================================================================
+一、本分支新增与修改的内容 —— MIT 许可
+Part 1: content added or changed by this fork — MIT License
+================================================================================
+
+以下内容由本分支作者 **MiyauchiRenge** 创作，采用 MIT 许可：
+
+  - README.md
+  - docs/汉化说明.md
+  - data/README.md
+  - tools/fetch_docs.py（新增）
+  - tools/probe-python.bat（新增）
+  - tools/dev/ 下的脚本及其调整
+  - web/js/i18n.js 中的 `zh` 字典与简体中文相关代码
+  - web/index.html 中的双语标题与首屏语言预判脚本
+  - web/js/app.js、web/css/app.css 中的界面改动、中文文案与技术改动
+    （`CAT_ICON` 分类图标指定、`legendSwatch()` 取物品自身图标）
+  - tools/build_markers.py（`LOCALES` 的 `zh` 条目、`DERIVED` 的中文条目）、
+    tools/extract_items.py（五张 `EquipParam*` 表的图标字段读法）、
+    tools/extract_icons.py（`EXTRA_ITEM_ICONS`）、
+    tools/extract_pieces.py、tools/erlib/mfg_categories.py、
+    tools/erlib/gamepath.py 中的改动与中文提示
+  - Setup.bat / Start Map.bat / Check Live Mode.bat / setup-linux.sh /
+    start-map.sh 中的中英双语提示与 `tools/fetch_docs.py` 步骤
+  - server/index.js、server/lib/bnd4.js 中新增的中文提示与安全注释
+
+The following was created by the author of this fork (MiyauchiRenge) and is
+licensed under the MIT License: README.md; docs/汉化说明.md; data/README.md;
+tools/fetch_docs.py; tools/probe-python.bat; the scripts under tools/dev/; the `zh`
+dictionary and Simplified Chinese code in web/js/i18n.js; the bilingual title and
+first-paint language script in web/index.html; the UI, Chinese strings and technical
+changes in web/js/app.js and web/css/app.css; the changes and Chinese prompt strings
+in tools/build_markers.py, tools/extract_items.py, tools/extract_icons.py,
+tools/extract_pieces.py, tools/erlib/mfg_categories.py and tools/erlib/gamepath.py;
+the bilingual prompt strings and the tools/fetch_docs.py step in Setup.bat,
+Start Map.bat, Check Live Mode.bat, setup-linux.sh and start-map.sh; and the new
+Chinese strings and security comments in server/index.js and server/lib/bnd4.js.
+
+上面这些文件同时含有上游代码。**MIT 只覆盖本分支作者创作与修改的部分**，
+文件中的上游原始代码仍按第二部分处理。
+Those files also contain upstream code. The MIT license covers only what this fork's
+author wrote or changed; the upstream code inside them is governed by Part 2.
+
+MIT License
+
+Copyright (c) 2026 MiyauchiRenge
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+二、上游原项目代码 —— 不在上述许可范围内
+Part 2: upstream code — NOT covered by the license above
+================================================================================
+
+本仓库其余部分来自 egormagurin/EldenRingMap:
+
+    https://github.com/egormagurin/EldenRingMap
+
+上游仓库**未附带 LICENSE 文件**，package.json 中也**没有 license 字段**，
+因此其代码默认保留所有权利（all rights reserved）。
+
+上述 MIT 许可**不适用于**这部分代码，也**不构成**原作者的任何授权。
+再分发或再利用上游代码，请自行向原作者取得许可。
+
+The remainder of this repository comes from egormagurin/EldenRingMap. That project
+ships no LICENSE file and declares no `license` field in package.json, so its code is
+all rights reserved by default. The MIT license above does not apply to that code and
+grants no rights to it. Obtain permission from the original author before
+redistributing or reusing it.
+
+上游 README 表达过"代码可以自由复制与修改"的意愿，但同时明确说明地图瓦片与标记名
+不是——那是 FromSoftware 的美术与文本，所以安装脚本从你自己的游戏里生成它们，
+而不是随仓库分发。在缺少正式 LICENSE 的情况下，这类表述是否构成完整授权仍有解释
+空间，本分支因此采取保守做法：不替原作者授权，只声明自己的贡献。
+
+Upstream's README expresses a willingness to let people copy and modify the code,
+while stating that the map tiles and marker names are not meant to be redistributed -
+those are FromSoftware's artwork and text, which is why setup generates them from your
+own installation. With no formal LICENSE in place, whether that wording amounts to a
+complete grant is open to interpretation, so this fork takes the conservative route: it
+does not license upstream's work on anyone's behalf, and claims only its own additions.
+
+================================================================================
+三、游戏素材 —— 本仓库不包含，也不授权
+Part 3: game assets — not included, not licensed
+================================================================================
+
+本仓库**不包含**任何《艾尔登法环》游戏素材。以下内容均由使用者从**自己合法拥有的
+游戏**中生成，此处不附带、也不再分发：
+
+  - 地图瓦片（web/tiles/）—— FromSoftware 的美术资源
+  - 游戏自带的地图图标与物品图标（web/icons/）
+  - 由 regulation.bin、MSB 地图文件与游戏消息表生成的
+    data/markers.json、data/items.json、data/legacy-conv.json、data/pieces.json
+  - 标记名称与坐标本身，同样源自游戏
+
+《艾尔登法环》及其全部素材的版权归 FromSoftware, Inc. 与 Bandai Namco
+Entertainment 所有。本项目与二者无任何关联，未获其授权或认可。
+
+Elden Ring and all related assets are copyright FromSoftware, Inc. and Bandai Namco
+Entertainment. This project is not affiliated with or endorsed by either.
+
+================================================================================
+四、随安装获取的社区文档与第三方文字 —— 不随仓库提交
+Part 4: community documentation and third-party text — fetched, not committed
+================================================================================
+
+以下文件**不在本仓库中**，由 tools/fetch_docs.py 在安装时从上游项目取得，
+或由使用者自行放置（见 data/README.md）。它们不是游戏素材，按各自项目的条款使用：
+
+  - data/paramdefs/*.xml            来自 Paramdex
+                                    https://github.com/soulsmods/Paramdex
+  - data/eventflag_bst.txt          来自 ER-Save-Lib
+                                    https://github.com/ClayAmore/ER-Save-Lib
+  - data/mfg/*.json                 来自 Map for Goblins
+                                    https://github.com/VirusAlex/ERR-MapForGoblins-DLL
+
+Fextralife wiki 互动地图的路线说明文字。那些文字属于 Fextralife 及其贡献者，
+其条款要求不得自动抓取、不得转载，因此请勿提交、分发或以其他方式公开它们。
+
+The files listed above are not part of this repository: they are fetched at setup time
+by tools/fetch_docs.py, or placed by hand by the user. The route descriptions fetched
+that this text is not fetched automatically and not republished, so keep it on your own
+machine and do not commit or redistribute it.
+
+**已移除（合规处理）**：此前有一个可选脚本 `tools/fetch_tips.py` 会从 Fextralife wiki 抓取路线说明文字。那些文字从未进入本仓库，但脚本本身会执行抓取，而 Fextralife 的条款禁止自动抓取，因此该脚本与 Setup 中对应步骤**已删除**。本仓库不含任何第三方文字，也不会自动抓取任何站点。
+**Removed for compliance**: an optional script `tools/fetch_tips.py` used to scrape route descriptions from the Fextralife wiki. That text was never in this repository, but the script itself performed the scrape, which their terms forbid, so the script and its Setup step have been deleted. This repository contains no third-party text and scrapes nothing.

@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------------------
+# Anything derived from the game itself stays local.
+#
+# Extracting these from a copy you own is fine; publishing them is
+# redistributing FromSoftware/Bandai Namco assets. Setup.bat regenerates all of
+# it (a couple of minutes), so a clone loses nothing.
+# ---------------------------------------------------------------------------
+
+# Map tile pyramid (~50 MB, 7k webp files)
+web/tiles/
+# The game's own map and item sprites, extracted by tools/extract_icons.py
+# (89 map and category sprites, 875 item sprites)
+web/icons/
+cache/
+
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# ---------------------------------------------------------------------------
+# Nothing under data/ is published: the generated marker files come out of the
+# user's own game, the community format documents (Paramdex paramdefs, the
+# ER-Save-Lib flag table, the Map-for-Goblins id lists) belong to their authors,
+# and the hand-checked tables carry item names. data/README.md documents the
+# format and is ours, so it is the one exception.
+# ---------------------------------------------------------------------------
+data/**
+!data/README.md
+
+# The hidden launcher writes its console output here.
+logs/
+
+# Scratch: commit messages, and local research notes that are not part of the
+# published documentation.
+_squash-msg.txt
+_commit-msg-*.txt
+docs/RESEARCH-BRIEF.md

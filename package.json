@@ -1,0 +1,22 @@
+{
+  "name": "lands-between-map",
+  "version": "2.0.0",
+  "description": "交界地地图（Lands Between Map）：艾尔登法环的本地地图工具，EldenRingMap 的独立中文分支；标记名取自游戏官方 zhocn 文本，安装与启动脚本中英双语",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MiyauchiRenge/LandsBetweenMap.git"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "extract-tiles": "python tools/extract_tiles.py",
+    "build-markers": "python tools/build_markers.py",
+    "setup": "python tools/extract_tiles.py && python tools/build_markers.py",
+    "inspect-save": "python tools/dev/er_save.py"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}
