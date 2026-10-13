@@ -40,6 +40,8 @@ export const state = {
   groupOpen: new Set(CAT_GROUPS.map((g) => g.id)),
   markers: [],
   byId: new Map(),
+  // Rewards with a verdict but no coordinates (data/quest-rewards-unplaced.json): listed, never drawn.
+  registered: [],
   // category -> the iconId most of its markers carry; see legendSwatch()
   categoryIconIds: new Map(),
   // category -> a marker of that category, for a row label the i18n files do not carry

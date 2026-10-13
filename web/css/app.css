@@ -204,6 +204,14 @@ html, body {
 .sr-item:hover { background: #262218; }
 .sr-item .sr-cat { font-size: 10px; color: var(--dim); margin-left: auto; text-transform: uppercase; }
 
+/* Rewards that were attributed but have no world object: a plain list, since there is nothing to pin. */
+#registered .panel-title { display: flex; align-items: center; gap: 6px; }
+#registered-count { opacity: .55; font-size: 10px; }
+#registered-list { max-height: 220px; overflow-y: auto; margin-top: 6px; }
+.reg-item { padding: 4px 0; font-size: 12px; display: flex; gap: 8px; align-items: baseline; }
+.reg-item .reg-name { flex: 1; }
+.reg-item .reg-verdict { font-size: 10px; color: var(--dim); white-space: nowrap; }
+
 /* ------------------------------------------------------------- layers/cats */
 
 .layer-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }

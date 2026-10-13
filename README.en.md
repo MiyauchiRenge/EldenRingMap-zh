@@ -164,6 +164,16 @@ group.
 
 ### Data and decisions
 
+* **A "Registered (no coordinates)" list**: the 423 rows of `data/quest-rewards-unplaced.json` and the
+  two shop shelves in `data/shop-stock.json` whose owner no script declares (Cracked Pot ×2) were filtered
+  out by `px != null` when the client loaded, so they were invisible - which is also why the merchant bell
+  bearings look incomplete: **21 of them have no coordinates** (Smithing-Stone Miner's [1] and [4],
+  Glovewort Picker's [1] and [2], Somber Smithing-Stone Miner's [1] and [2], among others) and exist only
+  in that registry. The sidebar now lists all **425 entries** (name plus the verdict the extractor
+  recorded: sold by a merchant / no reference in the data / held from the start, falling back to the
+  category when there is no verdict), with the count in the title and a re-render on every language
+  switch. They have no world object and no coordinates, so they are neither drawn nor navigable; a list is
+  the only honest form for them.
 * **Rows for lazy-layer categories (the gatherable categories had none at all)**: `restrictCatsToData()`
   created rows only for `EXTRA_CATS` (6 entries), while the 79 per-material `gather_*` categories exist
   only in the layer policy, so they had no CATS row; `state.enabled` is built from `Object.keys(CATS)`

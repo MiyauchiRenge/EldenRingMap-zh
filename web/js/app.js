@@ -145,6 +145,9 @@ async function boot() {
 
   state.manifest = manifest;
   state.markers = (markerDoc.markers || []).filter((m) => m.px != null);
+  // Rewards the extraction attributed but could not place: no world object, so no coordinates. They can
+  // never be pins, so they are kept aside and listed in the "registered" panel instead of being dropped.
+  state.registered = (markerDoc.markers || []).filter((m) => m.px == null && m.names);
   state.saves = saveDoc.saves || [];
   state.savePath = saveDoc.current || null;
   for (const m of state.markers) state.byId.set(m.id, m);
@@ -176,6 +179,7 @@ async function boot() {
 
   buildLayerButtons();
   buildCategories();
+  buildRegistered();
   initMap(state.master);
   wireUi();
   startKeepAlive();
@@ -191,6 +195,7 @@ async function boot() {
     buildLangSwitch();
     buildLayerButtons();
     buildCategories();
+    buildRegistered();
     buildSavePicker();          // "Level" in the option labels follows the language
     refreshCounts();
     if (state.character) renderCharacter(state.character);
@@ -1036,10 +1041,54 @@ function legendSwatch(key) {
   return `<span class="swatch" style="background:${CATS[key].color}"></span>`;
 }
 
+/**
+ * Rewards that were attributed but have no world object, and therefore no coordinates.
+ *
+ * The extraction records a verdict for each of them (sold on a merchant's shelf, held from the start,
+ * referenced by nothing in the game data), and none of them can ever be pinned on the map. Listing them
+ * here is what keeps those items - among them most of the merchant bell bearings - from being invisible.
+ */
+function buildRegistered() {
+  const list = $('registered-list');
+  if (!list) return;
+  const rows = (state.registered || []).slice();
+  const count = $('registered-count');
+  if (count) {
+    count.textContent = rows.length ? t('registered.count').replace('{}', rows.length) : '';
+  }
+  list.innerHTML = '';
+  rows.sort((a, b) => nameOf(a).localeCompare(nameOf(b), I18n.lang));
+  for (const m of rows) {
+    const row = document.createElement('div');
+    row.className = 'reg-item';
+    if (m.note) row.title = m.note;
+    const name = document.createElement('span');
+    name.className = 'reg-name';
+    name.textContent = nameOf(m);
+    const verdict = document.createElement('span');
+    verdict.className = 'reg-verdict';
+    // The extractor's verdict when it recorded one; otherwise the category (the two shop shelves whose
+    // owner no script declares carry no verdict, only their category).
+    let label = '';
+    if (m.verdict) {
+      const key = 'verdict.' + m.verdict;
+      label = t(key);
+      if (label === key) label = m.verdict;
+    }
+    if (!label) {
+      const byCat = catLabel(m.cat);
+      if (byCat !== m.cat) label = byCat;
+    }
+    verdict.textContent = label;
+    row.appendChild(name);
+    row.appendChild(verdict);
+    list.appendChild(row);
+  }
+}
+
 function buildCategories() {
   const wrap = $('category-list');
   wrap.innerHTML = '';
-
   // One legend row. Kept as a closure so both grouped and ungrouped rows are
   // built by exactly the same code.
   const buildRow = (key) => {
