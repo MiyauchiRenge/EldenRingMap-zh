@@ -13,7 +13,19 @@ import { CATS, CAT_GROUPS, EXTRA_CATS, OFF_BY_DEFAULT } from './catalog.js';
 export const $ = (id) => document.getElementById(id);
 export const t = (k) => I18n.t(k);
 export const nameOf = (m) => I18n.name(m);
-export const catLabel = (k) => t('cat.' + k);
+/**
+ * A row's label. Three sources, in order: the hand-written label, the bare item key that the gatherable
+ * rows carry (web/js/i18n.js holds one per material), and finally a marker's own name - which is where
+ * the Chinese material names come from, since those are read out of the game's message files.
+ */
+export const catLabel = (k) => {
+  const label = t('cat.' + k);
+  if (label !== 'cat.' + k) return label;
+  const bare = t(k);
+  if (bare !== k) return bare;
+  const named = state.catNames.get(k);
+  return named ? nameOf(named) : k;
+};
 // A raw master code (M10) is a developer's handle for a map; the player knows the
 // layer by its name. t() returns the key unchanged when a translation is missing,
 // so a master added by a future patch still shows something rather than nothing.
@@ -30,6 +42,8 @@ export const state = {
   byId: new Map(),
   // category -> the iconId most of its markers carry; see legendSwatch()
   categoryIconIds: new Map(),
+  // category -> a marker of that category, for a row label the i18n files do not carry
+  catNames: new Map(),
   regions: [],          // the game's region labels, from api/markers
   places: [],           // graces and POIs, for "nearest named place"
   manifest: null,
@@ -64,6 +78,9 @@ export const state = {
  */
 export function restrictCatsToData() {
   const used = new Set(state.markers.map((m) => m.cat));
+  for (const m of state.markers) {
+    if (m.names && !state.catNames.has(m.cat)) state.catNames.set(m.cat, m);
+  }
   // Categories of a layer that is still on its way (data/layers.json lists them) count as used: the
   // sidebar, the saved checkboxes and the progress rows are built once, at boot, and a gatherable
   // category that was dropped here could not come back when its markers arrive a moment later.
@@ -74,6 +91,20 @@ export function restrictCatsToData() {
     const group = CAT_GROUPS.find((g) => g.id === def.group);
     if (group && !group.cats.includes(key)) group.cats.push(key);
     if (!OFF_BY_DEFAULT.has(key)) state.enabled.add(key);
+  }
+  // A lazy layer's categories need a row before its markers arrive, because the sidebar and the saved
+  // tick state are built once. One row per collected material (gather_<item id>) is what the extraction
+  // produces, so without this the whole gather-nodes layer would have nowhere to show up. Rows for
+  // categories that never carry a marker (the coordinate-less quest-reward registry, "unplaced") are not
+  // created here: it belongs to a layer the client already has, and an empty row would only mislead.
+  for (const [cat, info] of LAZY_CATS) {
+    if (CATS[cat]) continue;
+    CATS[cat] = { color: (CATS.gathering && CATS.gathering.color) || '#7fae7f', r: 3 };
+    const group = CAT_GROUPS.find((g) => g.cats.includes('gathering'));
+    if (group && !group.cats.includes(cat)) group.cats.push(cat);
+    // Gatherable nodes come back when you rest, so their rows start switched off, exactly like the
+    // single "gathering" row used to; a counting category of a lazy layer starts on.
+    if (info.progress !== 'spots') state.enabled.add(cat);
   }
   for (const key of Object.keys(CATS)) {
     if (!used.has(key)) { delete CATS[key]; state.enabled.delete(key); }
@@ -129,6 +160,9 @@ export function isFound(m) {
 export const NO_PROGRESS = new Set(['gathering']);
 export let SPOTS_CATS = null;          // categories the layer document marks as spots, when it is present
 export const POLICY_CATS = new Set();  // every category the layer document declares, loaded or not
+// Categories of a layer the registry marks as `lazy` (its markers arrive after the first paint), with
+// that layer's progress accounting, so restrictCatsToData() can give each of them a row up front.
+export const LAZY_CATS = new Map();
 
 /**
  * Adopt the layer document's progress policy (data/layers.json, sent with the markers).
@@ -143,6 +177,13 @@ export function applyLayerPolicy(doc) {
   for (const [cat, info] of Object.entries(doc.cats)) {
     POLICY_CATS.add(cat);
     if (info && info.progress === 'spots') spots.add(cat);
+  }
+  LAZY_CATS.clear();
+  for (const layer of doc.layers || []) {
+    if (layer.client !== 'lazy') continue;
+    for (const cat of layer.categories || []) {
+      LAZY_CATS.set(cat, { progress: layer.progress, layer: layer.id });
+    }
   }
   for (const cat of NO_PROGRESS) spots.add(cat);
   SPOTS_CATS = spots;

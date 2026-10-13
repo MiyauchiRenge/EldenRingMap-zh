@@ -164,6 +164,22 @@ group.
 
 ### Data and decisions
 
+* **Rows for lazy-layer categories (the gatherable categories had none at all)**: `restrictCatsToData()`
+  created rows only for `EXTRA_CATS` (6 entries), while the 79 per-material `gather_*` categories exist
+  only in the layer policy, so they had no CATS row; `state.enabled` is built from `Object.keys(CATS)`
+  alone and `visibleMarkers()` keys off `state.enabled`, so **18,837 markers of the gather-nodes layer
+  could not be shown at all** (one category, `gather_20720`, holds 3,395 of them) and the sidebar had no
+  rows for them - contradicting "one gatherable category per material" in section 2. Now the categories
+  of layers the registry marks `lazy` get their row at boot (`LAZY_CATS`, sent with `data/layers.json`),
+  reusing the `gathering` colour and radius in the same group, and they start **switched off** (matching
+  `gathering`, so the map does not open with nineteen thousand extra dots). `catLabel()` gained a
+  fallback chain (hand-written label, then the bare item key in i18n, then a marker's own game name),
+  which is where the Chinese material names come from. Measured: CATS rows 122 -> **201**, markers with
+  no row **18,837 -> 0**, and the labels resolve to 遗迹石 / 罗亚果实 in Chinese and "Ruin Fragment" /
+  "Rowa Fruit" in English. `unplaced` (the 423 registered rewards without coordinates) deliberately gets
+  no row - its markers have no position, so an empty row would only mislead; the list section below is
+  where they belong.
+
 * **Per-entry verdicts for the 446 quest and event rewards**: `tools/extract_quest_rewards.py` is now
   evidence-driven instead of deriving a map from the lot number. Result: 71 sold on a merchant shelf,
   20 whose lot id carries a map, 1 event-script record, 7 held from the start (flag block 60000-60999)
