@@ -28,6 +28,7 @@ from erlib import dcx, emevd, fmg, msg, msb as msblib, oodle, param, paramdef   
 import erlib.gamefiles as gamefiles                                            # noqa: E402
 from erlib.dvdbnd import DvdBnd                                              # noqa: E402
 from erlib.gamepath import require_game_dir                                  # noqa: E402
+import erlib.mfg_categories as mfg_categories
 from erlib import layers
 from build_markers import LegacyConv, place                                  # noqa: E402
 from extract_items import (EV_TYPE, EV_TYPEDATA_PTR, TD_ITEM_LOT,            # noqa: E402
@@ -191,7 +192,8 @@ def main():
             new_names.add(nm)
             out.append({
                 "id": "follow:%d:%d" % (lot, lot + k),
-                "cat": ladder_cat(nm) or DROP_CAT.get(kind, "drop_items"),
+                "cat": ("great_runes" if mfg_categories.is_great_rune(iid)
+                else ladder_cat(nm) or DROP_CAT.get(kind, "drop_items")),
                 "names": {"zh": nm, "en": nmen},
                 "flag": None, "lot": lot + k, "parentLot": lot,
                 "master": src.get("master"), "px": src["px"], "py": src["py"],

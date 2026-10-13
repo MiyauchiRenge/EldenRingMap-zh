@@ -135,6 +135,22 @@
 
 ### 数据与判定
 
+* **大卢恩获得专属图例行（此前这一行恒为 0 标记）**：8 个大卢恩**其实一直都有坐标**，只是被归在
+  `boss_drops`（7 个）与 `drop_items`（1 个）里，于是 `great_runes` 这一行永远是空的。现按
+  `mfg_categories.py` 既有的 id 集合模式加入 `GREAT_RUNE_IDS`，并在四处归类点（`extract_items.py` 三处、
+  `extract_followup_lots.py` 一处、`extract_emevd_drops.py` 一处）覆盖：`boss_drops` **152 → 145**、
+  `great_runes` **0 → 7**（`boss-drops` 层），`followup` 层再 +2（`drop_items` 1249 → 1247）；
+  **没有任何标记增删**，有坐标总数仍 28,180；策略分类 202 → 203、首屏分类 121 → 122。
+* **`GREAT_RUNE_IDS` 的来历（由游戏数据推导，不是手工挑的）**：名字以「的大卢恩」结尾、且被某个
+  `ItemLotParam` 行发放的 goods 行——6 个碎片君王的大卢恩各有两套 id（191–196 与 8148–8153），
+  加上无缘诞生者（10080）与 DLC 的米凯拉（2008000）；「大卢恩幻影」（135）与说明行「说明：大卢恩」
+  （9141）不以该后缀结尾，排除在外。
+* **顺带补回本地数据缺失的数量字段**：这次按流水线顺序重跑（items → followup → emevd-drops →
+  quest-rewards → quantities → build_markers → policy，共 100 秒）把 `annotate_quantities.py` 产出的
+  `num` 补回，`gather-nodes.json` 的 19,263 条因此重新带上数量（此前本地数据处于未标注状态）。
+  自查仍列出 **10 个没有数据的图例行**（`bell_bearings`、`dragon_hearts`、`gestures`、`perfume_bottle`、
+  `pots_cracked`、`pots_great_cracked`、`region`、`seeds_tears`、`smithing_stone_shadow`、
+  `somber_stone_shadow`），是后续可继续按游戏数据归类的候选。
 * **补上"发放记录"这一族证据：未定位来源 333 → 269**：原先的记录识别只认
   `(type, entity, entityFlag, lot)` 这一族（地图掉落记录），于是像「锻造石矿工的铃珠【１】」这类由
   `common.emevd` 发放的物品全被记成"未定位来源"。在 `common.emevd` 参数区逐字段核对后确认存在第二族
@@ -220,7 +236,7 @@
   4 个数据层（EMEVD 奖励、任务与事件奖励、商店货架、数量标注），已补齐，并在安装末尾自动执行自检；
   同时移除写死的步骤编号，新增数据层无需重新编号。
 * **进度口径改由数据下发**：`data/layers.json` 声明每个分类所属层与统计口径。客户端优先据此判断，
-  缺少该文件时回落到 `gather_*` 前缀规则。实测：两种规则在 202 个分类上无差异，其中 35 个分类同时
+  缺少该文件时回落到 `gather_*` 前缀规则。实测：两种规则在 203 个分类上无差异，其中 35 个分类同时
   出现在点位层与计数层（`smithing_stone_*`、`glovewort_*`、`somber_stone_*`），按计数层计，
   与客户端原有逻辑一致。
 * **商店货架归属**：货架为 `ShopLineupParam` 中由说话脚本声明的一段连续行，形式为
@@ -280,7 +296,7 @@
 * **重层懒加载**：注册表新增 `client` 字段（`initial` / `lazy`），`followup`（855 KB）与
   `gather-nodes`（6.15 MB）标记为 `lazy`，服务端提供 `/api/layer/<id>`，页面首帧后并行获取并合并，
   失败时仅缺少对应标记。首屏标记数 28,156 → 5,970；懒加载层压缩后分别为 385,863 B 与 55,417 B。
-  首屏数据含 121 个分类而策略文件声明 202 个，侧栏与勾选状态按策略文件建立，采集点分类不会因数据
+  首屏数据含 122 个分类而策略文件声明 203 个，侧栏与勾选状态按策略文件建立，采集点分类不会因数据
   延迟到达而被剔除。
 * **数据在启动时读入（需要重启服务才会生效）**：`data/*.json`（含 `layers.json` 层策略）只在服务
   启动时加载一次，而 `web/**` 的页面与脚本是逐请求读盘。这里踩过一次坑：重新生成 `layers.json`
@@ -326,7 +342,7 @@
 * **删除十个已废弃分类的声明**：`material_nodes`、`golden_runes`、`golden_runes_low`、
   `one_time_drops`、`smithing_stones`、`smithing_stones_low`、`smithing_stones_rare`、
   `crafting_materials`、`gloveworts`、`great_gloveworts` 在数据中标记数为 0，也不在
-  `data/layers.json` 的 202 个分类里（`restrictCatsToData()` 启动时会按"无人使用"剔除），
+  `data/layers.json` 的 203 个分类里（`restrictCatsToData()` 启动时会按"无人使用"剔除），
   但声明仍留在 `web/js/catalog.js`（CATS 行、EXTRA_CATS 行与分组项）和 `web/js/i18n.js`
   （中英标签，共 20 行），其中 `material_nodes` 的标签还与 `gathering` 重复。现已全部删除，
   并改写 `catalog.js`、`mfg_categories.py` 中随之失效的注释；`crafting_materials` 还有内部用途
@@ -335,7 +351,7 @@
   **20 个数据文件逐字节相同**。
 * **新增分类声明检查**（`_check_categories.mjs`，随自查运行）：核对数据中出现的每个分类都在客户端有
   声明（`CATS`／`EXTRA_CATS`／层策略之一），并列出分组项缺行、以及"声明了但本机数据没有标记"的项。
-  当前结果：**数据分类 202 个，无声明 0 个**，分组项缺行 0 个。
+  当前结果：**数据分类 203 个，无声明 0 个**，分组项缺行 0 个。
 * **文档重组**：原 `docs/汉化说明.md` 拆分为 [docs/机制.md](docs/机制.md)（游戏数据机制）与
   [docs/实现.md](docs/实现.md)（代码结构、层契约、传输、验证与发布流程、与上游差异）；本 README
   按当前功能集重写，更新记录按主题分组。

@@ -160,6 +160,17 @@ SHADOW_RUNE_LEVEL_IDS = {2002952 + i: i + 1 for i in range(7)}
 # Runes with no level in the name: one legend row between them.
 SPECIAL_RUNE_IDS = {2913, 2919, 2002959, 2002960}   # Numen's, Lord's, Unsung Hero, Marika's
 BROKEN_RUNE_IDS = {2002951}
+# Great Runes: one legend row of their own (the row existed but no marker used it, because boss drops were
+# all filed under `boss_drops`). Derived from the game's own names - every goods row whose name ends with
+# "的大卢恩" and that some ItemLotParam row actually grants. The six shardbearer runes exist under two id
+# ranges (191-196 and 8148-8153), then the Unborn's and, for the DLC, Miquella's. "大卢恩幻影" and the
+# description row "说明：大卢恩" do not end with that suffix and stay out.
+GREAT_RUNE_IDS = {191, 192, 193, 194, 195, 196, 8148, 8149, 8150, 8151, 8152, 8153, 10080, 2008000}
+
+
+def is_great_rune(item_id):
+    """True for the goods rows the game calls a Great Rune (see GREAT_RUNE_IDS)."""
+    return item_id in GREAT_RUNE_IDS
 # A name like "Golden Rune [14]" must not invent a category: the legend would have
 # no row for it, and a marker whose category is missing from CATS is unreachable.
 # So the name rule accepts only levels these ladders actually have, and anything
@@ -320,6 +331,8 @@ def categorise(iid, name, category):
             return "special_runes"
         if iid in BROKEN_RUNE_IDS:
             return "broken_rune"
+        if iid in GREAT_RUNE_IDS:
+            return "great_runes"
         if iid == 10060:
             return "dragon_hearts"
         if iid in GLOVEWORT_LEVELS:

@@ -164,6 +164,25 @@ group.
 
 ### Data and decisions
 
+* **The Great Runes gained their own legend row (it used to hold no marker at all)**: all eight Great Runes
+  **already had coordinates**; they were simply filed under `boss_drops` (seven) and `drop_items` (one), so
+  the `great_runes` row stayed empty. Following the id-set pattern already used in `mfg_categories.py`, a
+  `GREAT_RUNE_IDS` set was added and applied at the classification sites (`extract_items.py` three,
+  `extract_followup_lots.py` one, `extract_emevd_drops.py` one): `boss_drops` **152 -> 145**, `great_runes`
+  **0 -> 7** (in the `boss-drops` layer) and two more in `followup` (`drop_items` 1249 -> 1247). **No marker
+  was added or removed**; the placed total stays 28,180, while the policy category count goes 202 -> 203 and
+  the first-paint count 121 -> 122.
+* **How `GREAT_RUNE_IDS` was derived (from game data, not hand-picked)**: every goods row whose name ends
+  with "的大卢恩" and that some `ItemLotParam` row actually grants - the six shardbearer runes exist under two
+  id ranges (191-196 and 8148-8153), plus the Unborn's (10080) and, for the DLC, Miquella's (2008000).
+  "大卢恩幻影" (135) and the description row "说明：大卢恩" (9141) do not end with that suffix and stay out.
+* **The missing quantity fields were restored along the way**: re-running the pipeline in order
+  (items -> followup -> emevd-drops -> quest-rewards -> quantities -> build-markers -> policy, 100 seconds)
+  brought back the `num` values produced by `annotate_quantities.py`, so all 19,263 rows of
+  `gather-nodes.json` carry their quantity again (the local data had been left unannotated). The
+  self-check still lists **10 legend rows with no data** (`bell_bearings`, `dragon_hearts`, `gestures`,
+  `perfume_bottle`, `pots_cracked`, `pots_great_cracked`, `region`, `seeds_tears`,
+  `smithing_stone_shadow`, `somber_stone_shadow`), which are the candidates for the same treatment.
 * **The award-record family added: "source not identified" fell from 333 to 269**: the record scan only
   recognised `(type, entity, entityFlag, lot)` - the map-drop family - so items granted from
   `common.emevd` (the "Smithing-Stone Miner's Bell Bearing [1]" is one) were all reported as having no
@@ -275,7 +294,7 @@ group.
   setup, and the hardcoded step numbers were removed so new data layers need no renumbering.
 * **Progress accounting is supplied as data**: `data/layers.json` states which data layer each category
   belongs to and how it is counted. The client prefers it and falls back to the `gather_*` prefix rule
-  when the file is absent. Measured: the two rules agree on all 202 categories, including 35 categories
+  when the file is absent. Measured: the two rules agree on all 203 categories, including 35 categories
   that appear in both a location layer and a counting layer (`smithing_stone_*`, `glovewort_*`,
   `somber_stone_*`), which are counted as progress, matching the client's previous logic.
 * **Shop shelf attribution**: a shelf is a run of `ShopLineupParam` rows declared by a talk script, either
@@ -414,7 +433,7 @@ group.
 * **Ten obsolete category declarations removed**: `material_nodes`, `golden_runes`, `golden_runes_low`,
   `one_time_drops`, `smithing_stones`, `smithing_stones_low`, `smithing_stones_rare`,
   `crafting_materials`, `gloveworts` and `great_gloveworts` have no markers in the data and are absent
-  from the 202 categories in `data/layers.json` (so `restrictCatsToData()` drops them at boot as unused),
+  from the 203 categories in `data/layers.json` (so `restrictCatsToData()` drops them at boot as unused),
   yet their declarations remained in `web/js/catalog.js` (CATS rows, EXTRA_CATS rows and a group entry)
   and in `web/js/i18n.js` (20 label lines across both languages); `material_nodes` even duplicated the
   `gathering` label. All of them are gone, and the comments in `catalog.js` and `mfg_categories.py` that
@@ -425,7 +444,7 @@ group.
 * **Category-declaration check added** (`_check_categories.mjs`, run with the other self-checks): it
   verifies that every category appearing in the data is declared by the client (`CATS`, `EXTRA_CATS` or
   the layer policy) and reports group entries without a row plus declarations that this data set never
-  fills. Current result: **202 data categories, 0 undeclared**, 0 group entries without a row.
+  fills. Current result: **203 data categories, 0 undeclared**, 0 group entries without a row.
 * **Documentation restructured**: the former `docs/汉化说明.md` was split into
   [docs/机制.md](docs/机制.md) (game-data mechanisms) and [docs/实现.md](docs/实现.md) (code structure,
   layer contract, transport, verification and release flow, and the file-by-file difference from

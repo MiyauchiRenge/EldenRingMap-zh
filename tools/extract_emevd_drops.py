@@ -29,6 +29,7 @@ from erlib import dcx, emevd, fmg, msg, msb, oodle, param, paramdef    # noqa: E
 import erlib.gamefiles as gamefiles                                  # noqa: E402
 from erlib.dvdbnd import DvdBnd                                    # noqa: E402
 from erlib.gamepath import require_game_dir                        # noqa: E402
+import erlib.mfg_categories as mfg_categories
 from erlib import layers
 from build_markers import LegacyConv, place                        # noqa: E402
 
@@ -147,7 +148,8 @@ def main():
             nmen = name_of_item(names, iid, kind, "en") or nm
             markers.append({
                 "id": "edrop:%s:%s:%d" % (mid, ent, lot),
-                "cat": DROP_CAT.get(kind, "drop_items"),
+                "cat": ("great_runes" if mfg_categories.is_great_rune(iid)
+                else DROP_CAT.get(kind, "drop_items")),
                 "names": {"zh": nm, "en": nmen},
                 "flag": lots[lot]["flag"],
                 "lot": lot, "entity": ent,
