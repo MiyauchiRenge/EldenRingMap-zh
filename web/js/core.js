@@ -14,17 +14,31 @@ export const $ = (id) => document.getElementById(id);
 export const t = (k) => I18n.t(k);
 export const nameOf = (m) => I18n.name(m);
 /**
- * A row's label. Three sources, in order: the hand-written label, the bare item key that the gatherable
- * rows carry (web/js/i18n.js holds one per material), and finally a marker's own name - which is where
- * the Chinese material names come from, since those are read out of the game's message files.
+ * A row's label, from the first source that has this language:
+ *
+ * 1. the hand-written label (web/js/i18n.js, one per named category);
+ * 2. the name the layer document carries for the category - a gatherable row's material name, read out of
+ *    the game's own message files, so it is correct in Chinese and in English;
+ * 3. a marker of that category (the same name, used when the policy predates the names field);
+ * 4. the bare item key in i18n (English names only, from before the policy carried them);
+ * 5. the key itself, so a future category still shows something.
  */
 export const catLabel = (k) => {
   const label = t('cat.' + k);
   if (label !== 'cat.' + k) return label;
+  const fromDoc = CAT_NAMES.get(k);
+  if (fromDoc) {
+    const name = fromDoc[I18n.lang] || fromDoc.en || fromDoc.zh;
+    if (name) return name;
+  }
+  const named = state.catNames.get(k);
+  if (named) {
+    const name = nameOf(named);
+    if (name) return name;
+  }
   const bare = t(k);
   if (bare !== k) return bare;
-  const named = state.catNames.get(k);
-  return named ? nameOf(named) : k;
+  return k;
 };
 // A raw master code (M10) is a developer's handle for a map; the player knows the
 // layer by its name. t() returns the key unchanged when a translation is missing,
@@ -162,6 +176,9 @@ export function isFound(m) {
 export const NO_PROGRESS = new Set(['gathering']);
 export let SPOTS_CATS = null;          // categories the layer document marks as spots, when it is present
 export const POLICY_CATS = new Set();  // every category the layer document declares, loaded or not
+// category -> {locale: name} as the layer document carries it, so a row can be labelled before the
+// markers of a lazy layer arrive (and without depending on an i18n key existing).
+export const CAT_NAMES = new Map();
 // Categories of a layer the registry marks as `lazy` (its markers arrive after the first paint), with
 // that layer's progress accounting, so restrictCatsToData() can give each of them a row up front.
 export const LAZY_CATS = new Map();
@@ -179,6 +196,7 @@ export function applyLayerPolicy(doc) {
   for (const [cat, info] of Object.entries(doc.cats)) {
     POLICY_CATS.add(cat);
     if (info && info.progress === 'spots') spots.add(cat);
+    if (info && info.names) CAT_NAMES.set(cat, info.names);
   }
   LAZY_CATS.clear();
   for (const layer of doc.layers || []) {

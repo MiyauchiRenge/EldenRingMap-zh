@@ -164,6 +164,15 @@ group.
 
 ### Data and decisions
 
+* **Four extractors read only the Chinese message table, so their English names were Chinese**: 
+  `extract_gather_nodes.py`, `extract_followup_lots.py`, `extract_emevd_drops.py` and
+  `extract_emevd_rewards.py` read `/msg/zhocn/` and then wrote the Chinese string into both `names.en`
+  and `names.zh`, which made **22,905 markers** (19,263 gatherable nodes, 3,369 follow-up items, 272
+  event drops, 1 event reward) show Chinese in the English interface. Added `tools/erlib/msg.py`, which
+  reads `engus` and `zhocn` together and falls back per locale, and switched all four to it. Measured:
+  markers whose English name held Chinese **22,905 -> 0**, and a per-marker comparison confirms the id,
+  category, coordinates, flag, `num` and Chinese name are **unchanged** (only `names.en` differs):
+  `托莉娜睡莲` -> `Trina's Lily`.
 * **A "Registered (no coordinates)" list**: the 423 rows of `data/quest-rewards-unplaced.json` and the
   two shop shelves in `data/shop-stock.json` whose owner no script declares (Cracked Pot ×2) were filtered
   out by `px != null` when the client loaded, so they were invisible - which is also why the merchant bell

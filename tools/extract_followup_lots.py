@@ -24,7 +24,7 @@ from collections import defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from erlib import dcx, emevd, fmg, msb as msblib, oodle, param, paramdef     # noqa: E402
+from erlib import dcx, emevd, fmg, msg, msb as msblib, oodle, param, paramdef     # noqa: E402
 import erlib.gamefiles as gamefiles                                            # noqa: E402
 from erlib.dvdbnd import DvdBnd                                              # noqa: E402
 from erlib.gamepath import require_game_dir                                  # noqa: E402
@@ -70,17 +70,16 @@ def main():
     conv = LegacyConv(params["WorldMapLegacyConvParam"].rows,
                       paramdef.load(os.path.join(ROOT, "data", "paramdefs",
                                                 "WorldMapLegacyConvParam.xml")))
-    names = {}
-    for f in ("item.msgbnd.dcx", "item_dlc02.msgbnd.dcx"):
-        p = "/msg/zhocn/%s" % f
-        if gamefiles.has(dvd, p):
-            for k, v in fmg.load_msgbnd(gamefiles.read(dvd, p), oodle=helper).items():
-                names.setdefault(k.split("_dlc")[0], {}).update(v)
+    # Both locales: see tools/erlib/msg.py (writing the Chinese text into `en` made the English
+    # interface show Chinese).
+    names = msg.load(dvd, oodle=helper)
 
-    def name_of(iid, kind):
+    def name_of(iid, kind, loc="zh"):
         for t in [TABLE_OF_KIND.get(kind, "")] + ["GoodsName", "WeaponName", "ProtectorName",
                                                  "AccessoryName", "GemName"]:
-            nm = (names.get(t) or {}).get(iid, "") if t else ""
+            if not t:
+                continue
+            nm = msg.text(names, loc, t, iid)
             if nm and "[ERROR]" not in nm:
                 return nm
         return ""
@@ -180,9 +179,10 @@ def main():
 
             src = ms[0]
             iid, kind, _num = items[0]
-            nm = name_of(iid, kind)
+            nm = name_of(iid, kind, "zh")
             if not nm:
                 continue
+            nmen = name_of(iid, kind, "en") or nm
             key = (nm, round(src["px"]), round(src["py"]))
             if key in existing:
                 dupes += 1
@@ -192,7 +192,7 @@ def main():
             out.append({
                 "id": "follow:%d:%d" % (lot, lot + k),
                 "cat": ladder_cat(nm) or DROP_CAT.get(kind, "drop_items"),
-                "names": {"zh": nm, "en": nm},
+                "names": {"zh": nm, "en": nmen},
                 "flag": None, "lot": lot + k, "parentLot": lot,
                 "master": src.get("master"), "px": src["px"], "py": src["py"],
                 "h": src.get("h", 0), "map": src.get("map"), "via": "sequent-lot",

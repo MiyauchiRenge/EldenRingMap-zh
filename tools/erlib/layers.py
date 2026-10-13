@@ -264,6 +264,29 @@ def check_setup():
     return missing, extra, missing_args
 
 
+def category_names():
+    """Localised name per category, taken from one marker of that category.
+
+    The client labels a sidebar row with it. Hand-written labels cover the categories the code names
+    itself; a gatherable category (gather_<item id>, one per collected material) has no such label, and
+    the item's own name - read out of the game's message files, so Chinese comes from the game itself -
+    is the right one in both languages.
+    """
+    names = {}
+    for layer in LAYERS:
+        if not os.path.isfile(layer_path(layer.id)):
+            continue
+        for marker in read_layer(layer.id).get("markers") or []:
+            cat = marker.get("cat")
+            if not cat or cat in names:
+                continue
+            labelled = {loc: marker["names"][loc] for loc in LOCALES
+                        if (marker.get("names") or {}).get(loc)}
+            if labelled:
+                names[cat] = labelled
+    return names
+
+
 def build_policy():
     """The document the client reads: which categories exist, in which layer, counting how.
 
@@ -273,6 +296,7 @@ def build_policy():
     """
     layers = []
     cats = {}
+    names = category_names()
     for layer, present, count, counts in scan():
         entry = layer.as_dict()
         entry["present"] = present is True
@@ -291,6 +315,8 @@ def build_policy():
     for cat, info in cats.items():
         kinds = {BY_ID[lid].progress for lid in info["layers"]}
         info["shared"] = "counts" in kinds and "spots" in kinds
+        if cat in names:
+            info["names"] = names[cat]
     spots = sorted(c for c, v in cats.items() if v["progress"] == "spots")
     shared = sorted(c for c, v in cats.items() if v["shared"])
     return {"locales": list(LOCALES), "layers": layers, "cats": cats,

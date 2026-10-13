@@ -135,6 +135,13 @@
 
 ### 数据与判定
 
+* **修复四个抽取器只读中文消息表导致的英文名错乱**：`extract_gather_nodes.py`、
+  `extract_followup_lots.py`、`extract_emevd_drops.py`、`extract_emevd_rewards.py` 原先只读
+  `/msg/zhocn/`，然后把中文串同时写进 `names.en` 与 `names.zh`，导致 **22,905 个标记**（采集点
+  19,263、后续物品 3,369、事件掉落 272、事件奖励 1）在英文界面显示中文。现新增
+  `tools/erlib/msg.py`（一次读全 `engus` 与 `zhocn`，缺项按语言回退），四处统一改为按语言取名。
+  实测：英文名含中文的标记 **22,905 → 0**；逐条比对确认标记的 id、分类、坐标、旗标、`num` 与
+  中文名**全未变动**（仅 `names.en` 变化），示例 `托莉娜睡莲` → `Trina's Lily`。
 * **新增「已登记（无坐标）」列表**：`data/quest-rewards-unplaced.json` 的 423 条与
   `data/shop-stock.json` 中 2 条没有归属商人的货架（`龟裂壶` ×2）此前在客户端被 `px != null`
   过滤掉，界面上完全看不到——这也是"商人铃珠看起来不止这些"的原因：铃珠中有 **21 个没有坐标**

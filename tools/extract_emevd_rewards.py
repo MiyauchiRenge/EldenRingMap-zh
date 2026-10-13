@@ -21,7 +21,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from erlib import dcx, emevd, fmg, oodle, param, paramdef      # noqa: E402
+from erlib import dcx, emevd, fmg, msg, oodle, param, paramdef      # noqa: E402
 import erlib.gamefiles as gamefiles                               # noqa: E402
 from erlib.dvdbnd import DvdBnd                                 # noqa: E402
 from erlib.gamepath import require_game_dir                     # noqa: E402
@@ -44,16 +44,14 @@ def main():
     helper = oodle.make_helper(game)
     params = param.load_params(gamefiles.regulation_path(game))
     ld = paramdef.load(os.path.join(ROOT, "data", "paramdefs", "ItemLotParam.xml"))
-    names = {}
-    for f in ("item.msgbnd.dcx", "item_dlc02.msgbnd.dcx"):
-        p = "/msg/zhocn/%s" % f
-        if gamefiles.has(dvd, p):
-            for k, v in fmg.load_msgbnd(gamefiles.read(dvd, p), oodle=helper).items():
-                names.setdefault(k.split("_dlc")[0], {}).update(v)
+    # Both locales: see tools/erlib/msg.py.
+    names = msg.load(dvd, oodle=helper)
 
-    def name_of(iid, kind):
+    def name_of(iid, kind, loc="zh"):
         for t in [TABLE_OF_KIND.get(kind, "")] + list(TABLE_OF_KIND.values()):
-            v = (names.get(t) or {}).get(iid, "") if t else ""
+            if not t:
+                continue
+            v = msg.text(names, loc, t, iid)
             if v and "[ERROR]" not in v:
                 return v
         return ""
@@ -67,7 +65,7 @@ def main():
                     continue
                 iid = ld.get(r.data, "lotItemId%02d" % i)
                 if iid in WANTED_CAT:
-                    lots[r.id] = (iid, WANTED_CAT[iid], name_of(iid, 1))
+                    lots[r.id] = (iid, WANTED_CAT[iid], name_of(iid, 1, "zh"), name_of(iid, 1, "en"))
                     break
     print("lots awarding a script-granted collectible: %d" % len(lots))
     if not lots:
@@ -158,7 +156,7 @@ def main():
         for w in words:
             if w in lots and w not in seen and w not in covered:
                 seen.add(w)
-                iid, cat, nm = lots[w]
+                iid, cat, nm, nmen = lots[w]
                 a = anchors.get(mid[:9]) or WARP_ANCHORS.get(mid[:9])
                 if a is None:
                     print("   %s lot %d (%s): no anchor marker in this map - not placed"
@@ -167,7 +165,7 @@ def main():
                 markers.append({
                     "id": "emevd-reward:%s:%d" % (mid, w),
                     "cat": cat,
-                    "names": {"zh": nm, "en": nm},
+                    "names": {"zh": nm, "en": nmen or nm},
                     "flag": None, "lot": w, "item": iid,
                     "master": a.get("master"), "px": a.get("px"), "py": a.get("py"),
                     "h": a.get("h"),

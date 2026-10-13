@@ -30,7 +30,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from erlib import dcx, fmg, msb as msblib, oodle, param, paramdef      # noqa: E402
+from erlib import dcx, fmg, msg, msb as msblib, oodle, param, paramdef      # noqa: E402
 import erlib.gamefiles as gamefiles                                       # noqa: E402
 from erlib.dvdbnd import DvdBnd                                         # noqa: E402
 from erlib.gamepath import require_game_dir                             # noqa: E402
@@ -91,12 +91,9 @@ def main():
                                           cvd.get(r.data, "srcPosZ"))
     print("parent-frame rows: %d ; m10_01 present: %s"
           % (len(PARENT_FRAME), (10, 1, 0) in PARENT_FRAME))
-    names = {}
-    for f in ("item.msgbnd.dcx", "item_dlc02.msgbnd.dcx"):
-        p = "/msg/zhocn/%s" % f
-        if gamefiles.has(dvd, p):
-            for k, v in fmg.load_msgbnd(gamefiles.read(dvd, p), oodle=helper).items():
-                names.setdefault(k.split("_dlc")[0], {}).update(v)
+    # Both locales: a marker carries its name in each, and writing the Chinese text into `en` made the
+    # English interface show Chinese (see tools/erlib/msg.py).
+    names = msg.load(dvd, oodle=helper)
 
     # GATHER_ICON: the item's own icon, from the same source items.json uses.
     _goods = params.get("EquipParamGoods")
@@ -122,10 +119,12 @@ def main():
             return _st.unpack_from("<H", raw, 0x30)[0] or None
         return None
 
-    def item_name(iid, kind):
+    def item_name(iid, kind, loc="zh"):
         for t in [TABLE_OF_KIND.get(kind, "")] + ["GoodsName", "WeaponName", "ProtectorName",
                                                   "AccessoryName", "GemName"]:
-            v = (names.get(t) or {}).get(iid, "") if t else ""
+            if not t:
+                continue
+            v = msg.text(names, loc, t, iid)
             if v and "[ERROR]" not in v:
                 return v
         return ""
@@ -191,10 +190,11 @@ def main():
                 continue
             items, flag = lots[lot]
             iid, kind, num = items[0]
-            nmz = item_name(iid, kind)
+            nmz = item_name(iid, kind, "zh")
             if not nmz:
                 named += 1
                 continue
+            nmen = item_name(iid, kind, "en") or nmz
             vx, vy, vz = m.vec3(poff + 0x20)
             # Same rule as extract_items.place2(): shift into the parent frame only when place()
             # cannot project the tile as-is (m10_01_00 and friends). Shifting everything moved
@@ -216,7 +216,7 @@ def main():
                 "id": "gather:%s:%s:%d" % (mid, s, poff),
                 "cat": ladder_cat(nmz) or ("gather_%d" % iid),
                 "iconId": icon_of(iid),
-                "names": {"zh": nmz, "en": nmz},
+                "names": {"zh": nmz, "en": nmen},
                 "flag": flag or None, "lot": lot, "item": iid, "once": bool(once),
                 "master": p[2], "px": round(p[0], 1), "py": round(p[1], 1), "h": round(p[3]),
                 "map": mid, "part": s, "aeg": aegid, "via": "aeg-node",

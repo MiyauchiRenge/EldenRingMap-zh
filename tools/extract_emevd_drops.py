@@ -25,7 +25,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from erlib import dcx, emevd, fmg, msb, oodle, param, paramdef    # noqa: E402
+from erlib import dcx, emevd, fmg, msg, msb, oodle, param, paramdef    # noqa: E402
 import erlib.gamefiles as gamefiles                                  # noqa: E402
 from erlib.dvdbnd import DvdBnd                                    # noqa: E402
 from erlib.gamepath import require_game_dir                        # noqa: E402
@@ -41,24 +41,17 @@ PLACEHOLDER = "[ERROR]"
 
 
 def load_item_names(dvd, helper):
-    """{table: {itemId: name}} from the Chinese item message tables."""
-    out = {}
-    for f in ("item.msgbnd.dcx", "item_dlc02.msgbnd.dcx"):
-        p = "/msg/zhocn/%s" % f
-        if not gamefiles.has(dvd, p):
-            continue
-        for table, rows in fmg.load_msgbnd(gamefiles.read(dvd, p), oodle=helper).items():
-            out.setdefault(table.split("_dlc")[0], {}).update(rows)
-    return out
+    """{locale: {table: {itemId: name}}} from the item message tables (see tools/erlib/msg.py)."""
+    return msg.load(dvd, oodle=helper)
 
 
-def name_of_item(names, iid, kind):
+def name_of_item(names, iid, kind, loc="zh"):
     """Name for an item, skipping the game's literal placeholder rows."""
     for table in (TABLE_OF_KIND.get(kind, ""), "GoodsName", "WeaponName",
                   "ProtectorName", "AccessoryName", "GemName"):
         if not table:
             continue
-        nm = (names.get(table) or {}).get(iid, "")
+        nm = msg.text(names, loc, table, iid)
         if nm and PLACEHOLDER not in nm:
             return nm
     return ""
@@ -147,14 +140,15 @@ def main():
                 continue
             mid, px, py, master, hgt = pos
             iid, kind = lots[lot]["items"][0]
-            nm = name_of_item(names, iid, kind)
+            nm = name_of_item(names, iid, kind, "zh")
             if not nm:
                 skipped_name += 1
                 continue
+            nmen = name_of_item(names, iid, kind, "en") or nm
             markers.append({
                 "id": "edrop:%s:%s:%d" % (mid, ent, lot),
                 "cat": DROP_CAT.get(kind, "drop_items"),
-                "names": {"zh": nm, "en": nm},
+                "names": {"zh": nm, "en": nmen},
                 "flag": lots[lot]["flag"],
                 "lot": lot, "entity": ent,
                 "master": master,
