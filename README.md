@@ -231,6 +231,14 @@
   （移除 `extract_pieces`、`tips`、`timeline.jsonl`、上游分类图标等失效条目，data 目录统一为不发布）
   与 `data/README.md`（列出全部 17 个数据文件及其生成者，移除已不存在的 `catalog.json`、
   `pieces.json`、`tips.json`）。
+* **删除四个已废弃分类的声明**：`material_nodes`、`golden_runes`、`golden_runes_low`、`one_time_drops`
+  在数据中标记数为 0，也不在 `data/layers.json` 的 202 个分类里（`restrictCatsToData()` 启动时会按
+  "无人使用" 剔除），但声明仍留在 `web/js/catalog.js`（CATS 行与分组项）和 `web/js/i18n.js`
+  （中英标签），其中 `material_nodes` 的标签还与 `gathering` 重复。现已删除这些声明与标签，并改写
+  `catalog.js`、`mfg_categories.py` 中随之失效的注释。对生成数据无影响：重跑
+  `extract_items.py` → `annotate_quantities.py` → 两个铃珠后处理步骤后，**20 个数据文件逐字节相同**。
+  同类遗留（`smithing_stones`、`smithing_stones_low`、`smithing_stones_rare`、`crafting_materials`、
+  `gloveworts`、`great_gloveworts`）标记数同为 0，仍保留在 `EXTRA_CATS` 中。
 * **文档重组**：原 `docs/汉化说明.md` 拆分为 [docs/机制.md](docs/机制.md)（游戏数据机制）与
   [docs/实现.md](docs/实现.md)（代码结构、层契约、传输、验证与发布流程、与上游差异）；本 README
   按当前功能集重写，更新记录按主题分组。

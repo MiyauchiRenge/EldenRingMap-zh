@@ -123,10 +123,10 @@ export const CATS = {
     }),
     [`glovewort_${l.family}_great`, { color: l.color, r: 4 }],
   ])),
-  // Runes, split by level the way the smithing stones are. The previous scheme
-  // was two rows, golden_runes_low and golden_runes, which cut three different
-  // ladders at three different points: Golden Rune at [8]/[9] but Shadow Realm
-  // Rune at [2]/[3], and Hero's Rune [1] was filed beside Golden Rune [13].
+  // Runes, split by level the way the smithing stones are. The earlier scheme was
+  // two rows (a low and a high bucket) built from two id sets, which cut three
+  // different ladders at three different points: Golden Rune at [8]/[9] but Shadow
+  // Realm Rune at [2]/[3], and Hero's Rune [1] was filed beside Golden Rune [13].
   ...Object.fromEntries(RUNE_LADDER.flatMap((l) =>
     Array.from({ length: l.max }, (_, i) => {
       const n = i + 1;
@@ -136,7 +136,6 @@ export const CATS = {
     }))),
   special_runes:         { color: '#ffe08a', r: 4 },
   broken_rune:           { color: '#a8a08a', r: 3 },
-  material_nodes:        { color: '#7fae7f', r: 3 },
   mp_fingers:            { color: '#c9a8a8', r: 3 },
   prattling_pates:       { color: '#e0c8a0', r: 3 },
   gestures:              { color: '#c0c9d8', r: 3 },
@@ -193,7 +192,7 @@ export const CATS = {
 export const CAT_GROUPS = [
   { id: 'basic',   label: 'group.basic',
     cats: ['grace', 'boss', 'poi', 'region', 'fragment', 'landmark',
-           'merchants', 'material_nodes'] },
+           'merchants'] },
   { id: 'gear',    label: 'group.gear',
     cats: ['armaments', 'armour', 'talismans', 'ashes_of_war', 'spirits'] },
   { id: 'upgrade', label: 'group.upgrade',
@@ -267,10 +266,6 @@ export const EXTRA_CATS = {
   // out still names it, and a marker whose category is missing from CATS is
   // unreachable, so it stays until the data is rebuilt.
   crafting_materials:   { group: 'consum',   color: '#7fae7f', r: 3 },
-  // The pre-split reward category: a data/drops.json generated before the
-  // rewards were split by kind still names it, and a marker whose category is
-  // missing from CATS is unreachable, so it stays until the data is rebuilt.
-  one_time_drops:       { group: 'loot',     color: '#e0a0c8', r: 4 },
   smithing_stones_low:  { group: 'upgrade',  color: '#c9a868', r: 3 },
   smithing_stones_rare: { group: 'upgrade',  color: '#e0c890', r: 4 },
   // The pre-split glovewort rows: a data/items.json generated before the ladder
@@ -280,8 +275,6 @@ export const EXTRA_CATS = {
   great_gloveworts:     { group: 'upgrade',  color: '#a890c9', r: 3 },
   seeds_tears:          { group: 'blessing', color: '#8ede7a', r: 4 },
   bell_bearings:        { group: 'loot',     color: '#e0a35a', r: 4 },
-  golden_runes:         { group: 'runes',    color: '#e8d04a', r: 4 },
-  golden_runes_low:     { group: 'runes',    color: '#d8c040', r: 3 },
 };
 // High-volume categories that bury the map when they are all on at once. They
 // start hidden and can be switched on from the sidebar.

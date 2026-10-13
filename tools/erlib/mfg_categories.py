@@ -229,10 +229,10 @@ def categorise(iid, name, category):
             return "merchant_bell_bearings"
 
         # Runes, split by level the way the smithing stones are. The old split was
-        # two rows, golden_runes_low and golden_runes, built from two id sets; it
-        # cut three different ladders at three different points - Golden Rune at
-        # [8]/[9] but Shadow Realm Rune at [2]/[3] - so "low" and "high" described
-        # nothing, and Hero's Rune [1] ended up filed beside Golden Rune [13].
+        # two rows (a low and a high bucket), built from two id sets; it cut three
+        # different ladders at three different points - Golden Rune at [8]/[9] but
+        # Shadow Realm Rune at [2]/[3] - so "low" and "high" described nothing, and
+        # Hero's Rune [1] ended up filed beside Golden Rune [13].
         # The level is in the item's own name, so read it from there.
         if "rune" in low:
             for family, prefix in RUNE_PREFIXES:
