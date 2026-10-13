@@ -228,11 +228,12 @@ function loadDeferredLayers(ids) {
           state.markers.push(m);
           if ((m.cat === 'grace' || m.cat === 'poi') && m.names) state.places.push(m);
         }
-        refreshCounts();
-        // A lazy layer's markers can be the only source of a row's item icon, and the category rows were
-        // built before they arrived, so rebuild both here.
+        // A lazy layer's markers can be the only source of a row's item icon and of the row's totals, so
+        // rebuild the icon map and the rows first, then fill the fresh rows with counts - in that order,
+        // because buildCategories() creates them with a 0/0 placeholder.
         state.categoryIconIds = categoryIconIds(state.markers);
         buildCategories();
+        refreshCounts();
         if (map) map.requestDraw();
         console.info(`layer ${id}: ${added.length} markers merged`);
       })
