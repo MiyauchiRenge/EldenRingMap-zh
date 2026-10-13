@@ -60,6 +60,9 @@ START_BLOCK = (60000, 61000)    # flags the game sets at character creation
 VERDICTS = {
     "event-instruction": "事件脚本指令里出现该物品的 lot（位置取该实体/该图 Boss/赐福）",
     "event-record": "事件脚本数据记录里出现该 lot（位置取该实体/该图 Boss/赐福）",
+    "event-award": "事件脚本的发放记录里出现该 lot：记录的第 7 个整数等于该物品的 getItemFlagId，"
+                   "因此可确认是发放而非偶然同名；记录若在地图事件文件里就落点，在 common 系文件里"
+                   "则只有来源、没有坐标",
     "event-flag": "事件脚本指令里出现该物品的旗标（位置取该事件所在图的 Boss/赐福）",
     "shop": "由商人货架出售（位置取货架所属商人）",
     "lot-map": "lot 编号里带地图位：按 ItemLotParam_map 的编号规律落在该图的 Boss/赐福",
@@ -163,18 +166,20 @@ def lot_map_candidates(lot, maps_with_anchor):
     return preferred + [m for m in found if m not in preferred]
 
 
-def scan_events(dvd, helper, lots, flags):
+def scan_events(dvd, helper, lots, flags, item_flags=None):
     """Walk every event file once; return per-lot evidence.
 
-    -> {value: {"instructions": [...], "records": [...], "files": {...}}}
+    -> {value: {"instructions": [...], "records": [...], "awards": [...], "flagInstructions": [...]}}
     """
-    ev = defaultdict(lambda: {"instructions": [], "records": [], "flagInstructions": []})
+    item_flags = item_flags or {}
+    ev = defaultdict(lambda: {"instructions": [], "records": [], "awards": [], "flagInstructions": []})
     maps = [line.split()[0] for line in
             io.open(os.path.join(ROOT, "cache", "map-list.txt"), encoding="utf-8")
             if line.strip().startswith("m")]
     needles = {v: struct.pack("<i", v) for v in (set(lots) | set(flags))}
     files_read = 0
-    for name in ["common", "common_macro"] + maps:
+    # common_func exists in the archives and holds 7,682 instructions, but the earlier file list omitted it.
+    for name in ["common", "common_func", "common_macro"] + maps:
         path = "/event/%s.emevd.dcx" % name
         if not gamefiles.has(dvd, path):
             continue
@@ -200,14 +205,25 @@ def scan_events(dvd, helper, lots, flags):
                     key = "instructions" if value in lots else "flagInstructions"
                     ev[value][key].append(rec)
                 at = raw.find(needle, at + 1)
-        # parameter records: (type, entity, entityFlag, lot). The shape is what makes this trustworthy,
-        # not the size of the id, so small lots are accepted here (check 1 cannot be).
+        # parameter records: two families, told apart by their shape rather than by id size.
+        #   drop record:  (type, entity, entityFlag, lot), entity == entityFlag > 1000
+        #   award record: (cond, a, b, c, lot, 0, itemFlag, d), itemFlag == the lot's getItemFlagId
+        # The award family was found by inspecting common.emevd around the lots we could not place; the
+        # item-flag link is what makes it evidence rather than a coincidence, and it is checked here.
         blob = raw[h["paramOffset"]:]
         words = list(struct.unpack_from("<%di" % (len(blob) // 4), blob, 0))
         for k in range(len(words) - 3):
             _type, ent, eflag, lot = words[k:k + 4]
             if lot in lots and ent == eflag and ent > 1000:
                 ev[lot]["records"].append({"file": name, "entity": ent, "flag": eflag})
+        for k in range(len(words) - 7):
+            if words[k + 5] != 0:
+                continue
+            lot, item_flag = words[k + 4], words[k + 6]
+            if lot in lots and item_flag and item_flags.get(lot) == item_flag:
+                ev[lot]["awards"].append({"file": name, "cond": words[k], "itemFlag": item_flag,
+                                          "a": words[k + 1], "b": words[k + 2], "c": words[k + 3],
+                                          "d": words[k + 7]})
     print("event files read: %d" % files_read)
     return ev
 
@@ -318,7 +334,9 @@ def main():
     # ---- evidence
     lots = {c["lot"] for c in candidates}
     reward_flags = {c["flag"] for c in candidates}
-    ev = scan_events(dvd, helper, lots, reward_flags)
+    # lot -> the flag the game sets when you obtain it: the award-record shape is checked against this.
+    item_flags = {c["lot"]: c["flag"] for c in candidates if c["flag"]}
+    ev = scan_events(dvd, helper, lots, reward_flags, item_flags=item_flags)
 
     # shop rows: which item ids are sold, and by which shelf. The kind has to agree with the row's
     # equipType or an id that happens to exist in another item table would look like a sale
@@ -357,6 +375,7 @@ def main():
         lot, flag, iid = c["lot"], c["flag"], c["item"]
         ins = ev[lot]["instructions"] if lot >= MIN_TRUSTED_LOT else []
         recs = ev[lot]["records"]
+        awards = ev[lot]["awards"]
         flag_ins = ev[flag]["flagInstructions"]
         sold = [s for s in (shops.get(iid) or [])
                 if s["equipType"] == kind_to_equip_type.get(c["kind"])]
@@ -394,6 +413,14 @@ def main():
                 a = map_anchor.get(hit["file"])
                 anchor = ("map:" + hit["file"], a[0]) if a else None
             return ("event-record", evidence, anchor)
+
+        def ev_award():
+            if not awards:
+                return None
+            hit = awards[0]
+            evidence = "m=%s 发放记录 cond=%d itemFlag=%d" % (hit["file"], hit["cond"], hit["itemFlag"])
+            a = map_anchor.get(hit["file"])
+            return ("event-award", evidence, ("map:" + hit["file"], a[0]) if a else None)
 
         def ev_flag():
             if not flag_ins:
@@ -440,7 +467,7 @@ def main():
                 return ("starting", None, None)
             return None
 
-        matches = [m for m in (ev_instruction(), ev_record(), ev_flag(), ev_shop(), ev_lot_map(),
+        matches = [m for m in (ev_instruction(), ev_record(), ev_award(), ev_flag(), ev_shop(), ev_lot_map(),
                                ev_starting()) if m]
         anchored = [m for m in matches if m[2] is not None]
         # A shelf or the starting block is a concrete source even without a position, so it outranks an

@@ -164,6 +164,24 @@ group.
 
 ### Data and decisions
 
+* **The award-record family added: "source not identified" fell from 333 to 269**: the record scan only
+  recognised `(type, entity, entityFlag, lot)` - the map-drop family - so items granted from
+  `common.emevd` (the "Smithing-Stone Miner's Bell Bearing [1]" is one) were all reported as having no
+  identified source. Field-by-field inspection of `common.emevd`'s parameter area showed a second family,
+  `(cond, a, b, c, lot, 0, itemFlag, d)`, where the seventh integer equals the lot's `getItemFlagId` -
+  that link rules out "the same number happens to appear", so it counts as evidence. The event file
+  `/event/common_func.emevd.dcx` (7,682 instructions), which the scan had been missing, is now read too.
+  Measured: **62** entries as `event-award`, `event-flag` from 6 to **8**, `unreferenced` from **333 to
+  269**. The layer totals are unchanged (**26 placed / 420 registered**) because all 62 records live in
+  `common`-family files with no map anchor, so they give a source but no position. The interface gained the
+  eight verdict labels (both blocks; only three existed, the rest showed the raw key).
+* **Three routes ruled out by measurement**: (1) searching EMEVD instructions for small lots is **not
+  reliable** - of the 199 lots already known to be granted by events, only 27 (13.6%) appear in an
+  instruction and only 5 (2.5%) satisfy `bank == 2003 && args[2] == lot`, so `MIN_TRUSTED_LOT` stays;
+  (2) NPC death drops are **not** the source - Iji, Rogier, Seluvis, Gowry, Pidia and Ymir all have
+  `NpcParam.itemLotId_map` and `itemLotId_enemy` set to `-1`; (3) the award record's flags (e.g. `520610`
+  for the miner's bell [1]) match **nothing** in the 358 talk scripts' constants, so that lead does not
+  reach an NPC position either.
 * **Shop attribution has a hard ceiling (recorded so the investigation is not repeated)**: none of the
   1,296 `ShopLineupParam` rows carries a shop or merchant field (`NpcParam` has none either) and no
   shop-to-range link table exists among the 194 parameters; the 358 readable talk scripts declare only
