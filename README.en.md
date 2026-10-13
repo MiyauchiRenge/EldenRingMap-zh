@@ -287,17 +287,21 @@ group.
   `extract_pieces`, `tips`, `timeline.jsonl` and the upstream category icons, and stating that nothing
   under `data/` is published), and `data/README.md` now lists all 17 data files with their producers
   instead of the removed `catalog.json`, `pieces.json` and `tips.json`.
-* **Four obsolete category declarations removed**: `material_nodes`, `golden_runes`,
-  `golden_runes_low` and `one_time_drops` have no markers in the data and are absent from the 202
-  categories in `data/layers.json` (so `restrictCatsToData()` drops them at boot as unused), yet their
-  declarations remained in `web/js/catalog.js` (CATS rows and a group entry) and `web/js/i18n.js` (both
-  languages), and `material_nodes` even duplicated the `gathering` label. Those declarations and labels
-  are gone, and the comments in `catalog.js` and `mfg_categories.py` that had become untrue were
-  rewritten. The generated data is unaffected: after re-running `extract_items.py` ->
-  `annotate_quantities.py` -> the two bell-bearing post-processing steps, **all 20 data files are
-  byte-identical**. The same kind of leftover (`smithing_stones`, `smithing_stones_low`,
-  `smithing_stones_rare`, `crafting_materials`, `gloveworts`, `great_gloveworts`) also has zero markers
-  and stays in `EXTRA_CATS`.
+* **Ten obsolete category declarations removed**: `material_nodes`, `golden_runes`, `golden_runes_low`,
+  `one_time_drops`, `smithing_stones`, `smithing_stones_low`, `smithing_stones_rare`,
+  `crafting_materials`, `gloveworts` and `great_gloveworts` have no markers in the data and are absent
+  from the 202 categories in `data/layers.json` (so `restrictCatsToData()` drops them at boot as unused),
+  yet their declarations remained in `web/js/catalog.js` (CATS rows, EXTRA_CATS rows and a group entry)
+  and in `web/js/i18n.js` (20 label lines across both languages); `material_nodes` even duplicated the
+  `gathering` label. All of them are gone, and the comments in `catalog.js` and `mfg_categories.py` that
+  had become untrue were rewritten; `crafting_materials` still has an internal use (the classifier returns
+  it and `extract_items.py` rewrites it to `gathering`), which is now noted in place. The generated data
+  is unaffected: after re-running `extract_items.py` -> `annotate_quantities.py` -> the two bell-bearing
+  post-processing steps, **all 20 data files are byte-identical**.
+* **Category-declaration check added** (`_check_categories.mjs`, run with the other self-checks): it
+  verifies that every category appearing in the data is declared by the client (`CATS`, `EXTRA_CATS` or
+  the layer policy) and reports group entries without a row plus declarations that this data set never
+  fills. Current result: **202 data categories, 0 undeclared**, 0 group entries without a row.
 * **Documentation restructured**: the former `docs/汉化说明.md` was split into
   [docs/机制.md](docs/机制.md) (game-data mechanisms) and [docs/实现.md](docs/实现.md) (code structure,
   layer contract, transport, verification and release flow, and the file-by-file difference from

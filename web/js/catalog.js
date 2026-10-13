@@ -109,7 +109,6 @@ export const CATS = {
   greases:               { color: '#c9d17a', r: 3 },
   utilities:             { color: '#8fb8a8', r: 3 },
   stat_boosts:           { color: '#d8a8c8', r: 3 },
-  crafting_materials:    { color: '#7fae7f', r: 3 },
   // Picked from the ground: excluded from the progress totals below, because the
   // nodes come back when you rest. Read out of the game's own crafting list.
   gathering:             { color: '#7fae7f', r: 3 },
@@ -212,7 +211,7 @@ export const CAT_GROUPS = [
            'larval_tears', 'great_runes', 'memory_stones', 'imbued_sword_keys'] },
   { id: 'consum',  label: 'group.consum',
     cats: ['consumables', 'greases', 'utilities', 'stat_boosts', 'throwables',
-           'pots_n_perfumes', 'gathering', 'crafting_materials', 'cookbooks', 'reusables'] },
+           'pots_n_perfumes', 'gathering', 'cookbooks', 'reusables'] },
   { id: 'runes',   label: 'group.runes',
     cats: [...RUNE_CATS, 'special_runes', 'broken_rune', 'rune_arcs'] },
   { id: 'magic',   label: 'group.magic',
@@ -261,24 +260,12 @@ export const EXTRA_CATS = {
   perfume_bottle:     { color: '#a9a2c9', r: 4, group: 'loot' },
   shop_stock:         { color: '#9fb3a0', r: 3, group: 'loot' },
 
-  smithing_stones:      { group: 'upgrade',  color: '#c9a868', r: 3 },
-  // The pre-split material bucket: an items.json from before gathering was split
-  // out still names it, and a marker whose category is missing from CATS is
-  // unreachable, so it stays until the data is rebuilt.
-  crafting_materials:   { group: 'consum',   color: '#7fae7f', r: 3 },
-  smithing_stones_low:  { group: 'upgrade',  color: '#c9a868', r: 3 },
-  smithing_stones_rare: { group: 'upgrade',  color: '#e0c890', r: 4 },
-  // The pre-split glovewort rows: a data/items.json generated before the ladder
-  // above still names them, and a marker whose category is missing from CATS is
-  // unreachable, so they stay until the dataset is rebuilt.
-  gloveworts:           { group: 'upgrade',  color: '#c9b5d8', r: 3 },
-  great_gloveworts:     { group: 'upgrade',  color: '#a890c9', r: 3 },
   seeds_tears:          { group: 'blessing', color: '#8ede7a', r: 4 },
   bell_bearings:        { group: 'loot',     color: '#e0a35a', r: 4 },
 };
 // High-volume categories that bury the map when they are all on at once. They
 // start hidden and can be switched on from the sidebar.
-export const OFF_BY_DEFAULT = new Set(['misc', 'consumables', 'gathering', 'crafting_materials', 'ammo']);
+export const OFF_BY_DEFAULT = new Set(['misc', 'consumables', 'gathering', 'ammo']);
 export const FOUND_COLOR = '#6fcf7a';
 export const CLUSTER_CELL_PX = 46;     // roughly how big a cluster cell looks on screen
 // Quantised zoom steps per doubling. Coarser steps mean the cell drifts further

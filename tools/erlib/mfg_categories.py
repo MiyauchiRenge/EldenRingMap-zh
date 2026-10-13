@@ -345,6 +345,8 @@ def categorise(iid, name, category):
         if sg == 50:
             return "throwables"
         if iid in CRAFTING_IDS:
+            # An internal label, not a client category: extract_items.py turns it into
+            # "gathering" (and drops the flag) because these nodes come back after a rest.
             return "crafting_materials"
         if sg in (60, 81) and iid < 4000000 and iid != 2008000:
             return "reusables"
