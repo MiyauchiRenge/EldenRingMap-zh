@@ -296,6 +296,18 @@ group.
 
 ### Transport and performance
 
+* **Tile extraction: parallel encoding and incremental rebuilds**: one Setup run took **286.7 seconds** in
+  `extract_tiles.py`, of which **266 seconds (93%) were the pyramid write** (a resize per level, a crop per
+  tile, one WebP encode per tile) while stitching the master cost only 15 seconds - the opposite of the
+  assumption that decoding was the bottleneck, so only the write is parallelised and stitching stays
+  serial. Each level's tiles are encoded on a thread pool (Pillow releases the GIL while writing WebP;
+  `--jobs` defaults to `min(6, CPU count)`), and "this source and these parameters were already built" is
+  recorded in `cache/tiles-state.json`, which lets a whole master be skipped (`--force` rebuilds anyway).
+  After an interruption, tiles that already exist are reused (same parameters means same bytes) and the
+  manifest is rebuilt by scanning the disk. Measured: **286.7 -> 175.1 seconds** (4 threads on a 4-core
+  machine; the write went from 266 to 156 seconds) and **1.9 seconds** when the source and parameters are
+  unchanged (all 7,140 tiles reused). In both modes the output is **byte-identical** to before the change
+  (7,141 files, equal whole-tree hash, identical `manifest.json`).
 * **Response layer and compression**: `server/lib/respond.js` selects brotli or gzip from
   `Accept-Encoding` and caches the encoded copy by content ETag; responses carry an ETag and conditional
   requests get a 304; `/tiles/**` and `/icons/**` are cached for a day while everything else is
