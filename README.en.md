@@ -5,7 +5,7 @@
 A Chinese-first interactive map for Elden Ring, maintained by **MiyauchiRenge**. Every marker,
 category and progress figure is generated from the local game files and save: the program only reads
 them, and modifies neither the game nor its saves. The engine's origin and licence are stated in
-section 5, "Origin and licence", at the end of this document.
+section 5, "Origin, licence and disclaimer", at the end of this document.
 
 ---
 
@@ -62,7 +62,7 @@ The measured per-file difference (upstream `48f42e57` has 143 files, this reposi
   grant two).
 
 Field offsets, decision rules and the supporting numbers are in [docs/机制.md](docs/机制.md) (Chinese).
-Known limitations are listed under Disclaimer below.
+Known limitations are listed in section 5, "Origin, licence and disclaimer", at the end.
 
 ## 4. Installation
 
@@ -76,7 +76,20 @@ Windows only. Node.js 18+ and Python 3 are required (Python only during setup). 
 localhost by default; `--lan` exposes it to the local network. Detailed steps and troubleshooting are in
 section 6 of [docs/实现.md](docs/实现.md) (Chinese).
 
-## Disclaimer
+## 5. Origin, licence and disclaimer
+
+**Origin and licence**
+
+* **Engine origin**: the map engine, game-data parsing and save sync started from
+  [egormagurin/EldenRingMap](https://github.com/egormagurin/EldenRingMap). This repository has since
+  been maintained on its own and no longer tracks upstream; the measured file-by-file difference (67
+  files here against upstream's 143: 17 identical, 19 changed, 31 added, 107 upstream-only) is in
+  section 8 of [docs/实现.md](docs/实现.md).
+* **Licence**: upstream ships no licence, so its code remains all rights reserved. This repository's MIT
+  grant covers only its own additions and modifications and not the upstream code; see [LICENSE](LICENSE)
+  and section 9 of [docs/实现.md](docs/实现.md).
+
+**Disclaimer**
 
 * This is a personal hobby project. It is not affiliated with FromSoftware, Bandai Namco or the upstream
   project's authors, and does not represent them.
@@ -84,23 +97,10 @@ section 6 of [docs/实现.md](docs/实现.md) (Chinese).
 * The program only reads local game files and saves. It does not modify the game or its saves, does not
   go online and does not inject into any process.
 * The repository contains no game assets and no third-party guide text: map tiles and icons are generated
-  from the local game files, and `data/**` is not committed.
+  from the local game files, and `data/**` commits only [README.md](data/README.md) while everything else
+  is excluded by `.gitignore`.
 * Names and classifications may contain individual errors. Issue reports should include evidence (an
   in-game screenshot or a data source).
-
-## 5. Origin and licence
-
-* **Engine origin**: the map engine, game-data parsing and save sync started from
-  [egormagurin/EldenRingMap](https://github.com/egormagurin/EldenRingMap). This repository has since
-  been maintained on its own and no longer tracks upstream; the measured file-by-file difference (67
-  files here against upstream's 143: 17 identical, 19 changed, 31 added, 107 upstream-only) is in
-  section 8 of [docs/实现.md](docs/实现.md).
-* **The repository ships no game content**: tiles and icons are generated from the local game files,
-  `data/**` commits only [README.md](data/README.md) and everything else is excluded by `.gitignore`.
-  The setup script generates these files locally instead of distributing them.
-* **Licence**: upstream ships no licence, so its code remains all rights reserved. This repository's MIT
-  grant covers only its own additions and modifications and not the upstream code; see [LICENSE](LICENSE)
-  and section 9 of [docs/实现.md](docs/实现.md).
 
 ## 6. Changelog
 
@@ -136,9 +136,10 @@ group.
   of `Setup.bat`, `Start Map.bat` and `Start Map.vbs`. The GitHub repository was renamed to
   `LandsBetweenMap` (the old address redirects), and `package.json`'s `repository.url` and the local
   directory names follow it. The README's former "Upstream and licence" section moved to the end and was
-  rewritten as section 5, "Origin and licence"; the remaining sections were renumbered accordingly. The
-  upstream attribution and the download address used for the `data/` format documents are unchanged.
-  `package.json` version 1.4.0 -> **2.0.0**, marking the first independent release of this branch.
+  merged with the disclaimer into section 5, "Origin, licence and disclaimer"; the remaining sections were
+  renumbered accordingly. The upstream attribution and the download address used for the `data/` format
+  documents are unchanged. `package.json` version 1.4.0 -> **2.0.0**, marking the first independent
+  release of this branch.
 
 ### Scope
 
@@ -291,3 +292,8 @@ group.
   layer contract, transport, verification and release flow, and the file-by-file difference from
   upstream). This README was rewritten around the current feature set, with the changelog grouped by
   theme.
+* **Disclaimer merged into the final section**: the disclaimer was the only unnumbered section, and it sat
+  between section 4, "Installation", and section 5, "Origin and licence", which is structurally
+  inconsistent; its "the repository ships no game content" bullet also repeated the origin section. The
+  two are now one section, 5, "Origin, licence and disclaimer", with an "Origin and licence" group and a
+  "Disclaimer" group, and the in-text references to it were updated.
