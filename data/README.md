@@ -31,7 +31,7 @@ python tools/fetch_docs.py --force    # 全部重新下载
 
 | 文件 | 生成者 | 内容 |
 |---|---|---|
-| `markers.json` | `tools/build_markers.py` | 赐福、Boss、据点、地图碎片等世界标记（名称取自游戏官方文本） |
+| `markers.json` | `tools/build_markers.py` | 赐福、Boss、地标、地图碎片等世界标记（名称取自游戏官方文本） |
 | `regions.json` | `tools/build_markers.py` | 游戏地区名及其矩形范围 |
 | `legacy-conv.json` | `tools/build_markers.py` | 母图与子图坐标换算缓存 |
 | `items.json` | `tools/extract_items.py` | 道具拾取点、名称与图标编号 |
@@ -44,8 +44,8 @@ python tools/fetch_docs.py --force    # 全部重新下载
 | `gather-nodes.json` | `tools/extract_gather_nodes.py` | 采集点（`once` 标记一次性与可刷新） |
 | `farm.json` | `tools/extract_farm_nodes.py` | 可刷取材料的地点 |
 | `shop-stock.json` | `tools/dev/shop_register.py` | 商店货架及其归属商人 |
-| `quest-rewards.json` | `tools/extract_quest_rewards.py` | 任务奖励中可落到坐标的部分 |
-| `quest-rewards-unplaced.json` | `tools/extract_quest_rewards.py` | 其余任务奖励，每条含判定与理由，无坐标 |
+| `quest-rewards.json` | `tools/extract_quest_rewards.py` | 任务与事件奖励中可落到坐标的部分 |
+| `quest-rewards-unplaced.json` | `tools/extract_quest_rewards.py` | 其余任务与事件奖励，每条含判定与理由，无坐标 |
 | `user-verified.json` | 人工 / `tools/dev/place_from_save.py` | 手动核定的位置 |
 | `quantities.json` | `tools/annotate_quantities.py` | 每个 lot 实际给予的数量 |
 | `layers.json` | `tools/erlib/layers.py policy` | 供客户端使用的层策略（分类所属层与进度口径） |

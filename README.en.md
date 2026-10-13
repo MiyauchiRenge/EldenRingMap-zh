@@ -12,7 +12,7 @@ section 5, "Origin and licence", at the end of this document.
 ## 1. Features
 
 * **Interactive world map** covering the surface, the underground and the Shadow Realm, with zoom, pan
-  and layer switching;
+  and map-layer switching;
 * **Markers and categories**: graces, landmarks, bosses, map fragments, items, gatherable nodes,
   farmable drops, merchants, character drops, boss rewards, event-granted items, shop shelves and quest
   rewards. Each category has one row, can be toggled, and carries a progress count; row icons use the
@@ -35,7 +35,7 @@ section 5, "Origin and licence", at the end of this document.
 | --- | --- |
 | Localisation | Chinese interface; item, region and grace names come from the game's FMG tables, with no hand-written translation |
 | Extraction | Gatherable nodes (one-time and respawning), farm spots, character drops, boss rewards, event-granted items, follow-up items, shop shelves, quest rewards; item-icon pipeline |
-| Categories | Smithing stones and gloveworts split by family and level, runes by family and tier; one gatherable category per material |
+| Categories | Smithing stones and gloveworts split by kind and level, runes likewise; one gatherable category per material |
 | Interface | Same-spot list, item sprites in the legend, region and nearest place names, progress that separates one-time from repeatable |
 | Installation | `Setup.bat` performs every generation step (17 steps); community format documents are fetched once during setup |
 | Scope | No mod support, Windows only, no reading of the running game's memory |
@@ -53,7 +53,7 @@ The measured per-file difference (upstream `48f42e57` has 143 files, this reposi
 * **Save world state**: after the event flags, a save slot holds two blocks: `MOEG` (broken or picked
   assets) and `FOEG` (permanently picked one-time nodes). Entries are 8 bytes:
   `key = instance << 15 | state`, `model = 10000000 + AEG id`, grouped per map.
-* **Quest rewards**: 446 lots whose flag is set in the save but which no world object references. Each
+* **Quest and event rewards**: 446 lots whose flag is set in the save but which no world object references. Each
   was classified from evidence (event instruction, event record, shop shelf, map digits in the lot id,
   starting block, or none): 23 have coordinates and 423 carry a verdict and a stated reason.
 * **Verification results**: all 321/321 `FOEG` nodes are present on the map, no missing marker against
@@ -107,6 +107,25 @@ section 6 of [docs/实现.md](docs/实现.md) (Chinese).
 The rest of this document is the stable description. Entries are grouped by theme, newest first within a
 group.
 
+### Terminology
+
+* **"family / tier" replaced by "kind / level"**: the game names these items as kind plus level
+  (`黄金卢恩【１】`, `英雄卢恩【５】`, `墓地铃兰【１】`, `灵依墓地铃兰【９】`), so the descriptions of how
+  smithing stones, gloveworts and runes are split now say "by kind and level" throughout.
+* **"据点" (stronghold) replaced by "地标" (landmark)**: the 294 markers in that category are cities and
+  places - Stormveil Castle, Leyndell, the Academy of Raya Lucaria, Volcano Manor, the Stranded Graveyard,
+  the Hero's Grave at the border, Minor Erdtrees, the Artist's Shack - which "stronghold" cannot cover.
+  The UI label `cat.poi` changed from "据点与地标" to "地标", and its English label from
+  "Points of interest" to "Landmarks" (the English prose already used landmarks).
+* **"quest rewards" replaced by "quest and event rewards"**: that data layer collects lots whose flag is
+  set while no world object references them, and the per-entry verdicts include 69 shop sales and 7 items
+  held from the start, so naming it after quests alone was inaccurate. The data-layer and file ids
+  (`quest-rewards.json`, `quest-rewards-unplaced.json`) are unchanged.
+* **"layer" disambiguated**: [docs/实现.md](docs/实现.md) now states the convention - a generated file in
+  the registry is a **data layer**, while the surface, underground and Shadow Realm are **map layers** -
+  and the mixed uses in this README and both documents were corrected accordingly (the UI's "layers" panel
+  means map layers, `/api/layer/<id>` means data layers).
+
 ### Renaming
 
 * **Renamed to "Lands Between Map" (交界地地图)**: this branch no longer tracks upstream (of upstream's
@@ -124,7 +143,7 @@ group.
 ### Scope
 
 * **Mod support removed**: this branch reads the unmodified game only. Removed `tools/erlib/modfiles.py`
-  (the loose-file-first lookup layer), `tools/extract_pieces.py` (the Reforged rune and ember piece layer)
+  (the loose-file-first lookup layer), `tools/extract_pieces.py` (the Reforged rune and ember piece data layer)
   and its data, the `--mod-dir` and `ER_MOD_DIR` plumbing, the MODDIR and piece steps in `Setup.bat`, the
   branch in `server/index.js` that preferred the modded save `ER0000.err`, and the ERR-only classifier
   entries (fortunes, sealed curios, added items) together with the ERR spirit-ash id range. Classification
@@ -140,11 +159,11 @@ group.
 * **Dangling third-party route-text pipeline removed**: the Fextralife fetcher had already been removed,
   but its remains were still present: the fetch prompt in `Setup.bat`, the `tips.json` injection in
   `server/index.js`, the client's route block and its HTML allow-list, and the route and via labels in
-  i18n. All of it is gone, which also removes the bug where `TIPS=yes` skipped two layers.
+  i18n. All of it is gone, which also removes the bug where `TIPS=yes` skipped two data layers.
 
 ### Data and decisions
 
-* **Per-entry verdicts for the 446 quest rewards**: `tools/extract_quest_rewards.py` is now
+* **Per-entry verdicts for the 446 quest and event rewards**: `tools/extract_quest_rewards.py` is now
   evidence-driven instead of deriving a map from the lot number. Result: 71 sold on a merchant shelf,
   20 whose lot id carries a map, 1 event-script record, 7 held from the start (flag block 60000-60999)
   and 347 with no reference anywhere in the game data. 23 of them have coordinates (the owning merchant,
@@ -161,12 +180,12 @@ group.
   how it is delivered (`initial` / `lazy`). Every extractor writes through `write_layer()` /
   `write_raw()` (16 call sites), giving one `{"locales","markers"}` structure, sorted keys, LF line
   endings, compact separators and a temp-file-plus-replace write. Measured: two consecutive runs of the
-  same tool are byte-identical; total layer size fell from 9.53 MB to 8.54 MB (-10%).
-* **`Setup.bat` can no longer skip a layer**: the registry self-check
-  (`python tools/erlib/layers.py check`) found four layers missing from the install script (EMEVD rewards,
-  quest rewards, shop shelves, quantity annotation). They were added, the check now runs at the end of
-  setup, and the hardcoded step numbers were removed so new layers need no renumbering.
-* **Progress accounting is supplied as data**: `data/layers.json` states which layer each category
+  same tool are byte-identical; total data-layer size fell from 9.53 MB to 8.54 MB (-10%).
+* **`Setup.bat` can no longer skip a data layer**: the registry self-check
+  (`python tools/erlib/layers.py check`) found four data layers missing from the install script (EMEVD rewards,
+  quest and event rewards, shop shelves, quantity annotation). They were added, the check now runs at the end of
+  setup, and the hardcoded step numbers were removed so new data layers need no renumbering.
+* **Progress accounting is supplied as data**: `data/layers.json` states which data layer each category
   belongs to and how it is counted. The client prefers it and falls back to the `gather_*` prefix rule
   when the file is absent. Measured: the two rules agree on all 202 categories, including 35 categories
   that appear in both a location layer and a counting layer (`smithing_stone_*`, `glovewort_*`,
@@ -184,7 +203,7 @@ group.
   data, although the changelog already recorded that field. They now run for real and are steps 16 and 17
   of `Setup.bat`, declared in the registry so the self-check still reports zero undeclared calls.
   Measured: only `npcs.json` and `drops.json` changed, the other 19 data files are byte-identical, the
-  layer still holds 21 markers with all 21 names unchanged, and two consecutive runs produce the same
+  data layer still holds 21 markers with all 21 names unchanged, and two consecutive runs produce the same
   result. `tools/dev/rename_merchants.py` was deleted: it is a stale duplicate of the merchant naming
   (older "kind·place" style plus a suppression file only it read), while the actual naming is done by
   `extract_items.py` as "kind (nearest grace)".
@@ -206,8 +225,8 @@ group.
   (9 regions with rectangles); markers and the player marker show "region (nearest place)". The region is
   the nearest rectangle (further than 400 master pixels does not count), and a place name containing the
   region name takes precedence.
-* **Category and label corrections**: smithing stones and gloveworts are split by family and level, runes
-  by family and tier; labels were corrected against the game's own translations (砥石小刀 to 砥石刀,
+* **Category and label corrections**: smithing stones and gloveworts are split by kind and level, runes
+  likewise; labels were corrected against the game's own translations (砥石小刀 to 砥石刀,
   丢失的战灰 to 失力战灰, 多话的帕特 to 唤声泥颅, among others). The check compares all 101 category
   labels with the items they actually contain.
 * **Item icons**: the icon fields of five `EquipParam*` tables are used; the last four are 2 bytes wide
@@ -231,10 +250,10 @@ group.
   `no-cache`. Measured: the first-paint marker document went from 8,564,838 B to 1,560,023 B
   uncompressed and 173,122 B with brotli (-98%); `js/app.js` 93,960 to 30,282 B, `js/i18n.js` 30,786 to
   8,293 B, `css/app.css` 17,659 to 4,742 B; a repeated request hits the ETag and returns 304 with 0 bytes.
-* **Lazy loading of heavy layers**: the registry gained a `client` field (`initial` / `lazy`);
+* **Lazy loading of heavy data layers**: the registry gained a `client` field (`initial` / `lazy`);
   `followup` (855 KB) and `gather-nodes` (6.15 MB) are marked lazy, the server exposes them through
   `/api/layer/<id>` and the page fetches and merges them after its first paint, so a failure only means
-  those markers are missing. Initial marker count fell from 28,156 to 5,970; the lazy layers arrive as
+  those markers are missing. Initial marker count fell from 28,156 to 5,970; the lazy data layers arrive as
   385,863 B and 55,417 B compressed. The initial document carries 121 categories while the policy file
   declares 202, and the sidebar and tick state are built from the policy, so gatherable categories are
   not dropped while their data is in flight.
@@ -258,7 +277,7 @@ group.
   error that `node --check` cannot detect). The draw benchmark above exposed it and it was fixed.
 * **`Setup.bat` execution order fixed**: the last two steps (follow-up items of sequential lots and
   gatherable nodes) sat at the end of the file after `Done` and were never executed, so a fresh install
-  lacked both layers. They are now in execution order and the steps are numbered afresh.
+  lacked both data layers. They are now in execution order and the steps are numbered afresh.
 * **Unused files removed**: deleted seven probe dumps at the repository root (`_gap_*.txt`,
   `_raw_lot_hits.txt`, `_save_verify.txt`, `_world_gaps.txt`) and 14 one-off investigation scripts under
   `tools/dev/` (their conclusions are recorded in [docs/机制.md](docs/机制.md), and the checks worth
