@@ -51,8 +51,7 @@ export const CATS = {
   grace:     { color: '#ffd766', r: 6 },
   boss:      { color: '#e05a5a', r: 6 },
   poi:       { color: '#6fb7e8', r: 5 },
-  region:    { color: '#9aa0a8', r: 5 },
-  fragment:  { color: '#c58bea', r: 5 },
+    fragment:  { color: '#c58bea', r: 5 },
   landmark:  { color: '#8fa3b8', r: 4 },
   // --- equipment ---
   armaments:    { color: '#d4805a', r: 4 },
@@ -137,8 +136,7 @@ export const CATS = {
   broken_rune:           { color: '#a8a08a', r: 3 },
   mp_fingers:            { color: '#c9a8a8', r: 3 },
   prattling_pates:       { color: '#e0c8a0', r: 3 },
-  gestures:              { color: '#c0c9d8', r: 3 },
-  reusables:             { color: '#a8c9c0', r: 3 },
+    reusables:             { color: '#a8c9c0', r: 3 },
   // Smithing stones are split by level and by somber/normal, so the legend can
   // single out "Somber Smithing Stone [7]" instead of lumping every tier into
   // three rarity buckets. The ladder is [1]-[8] normal and [1]-[9] somber: the
@@ -158,9 +156,7 @@ export const CATS = {
                                      icon: n <= 6 ? 'smst_low.png' : 'smst.png' }];
     }),
   ]),
-  smithing_stone_shadow: { color: '#a89e8c', r: 4 },
-  somber_stone_shadow:   { color: '#9a8ab0', r: 4 },
-  smithing_stone_legend: { color: '#e0c890', r: 4 },
+      smithing_stone_legend: { color: '#e0c890', r: 4 },
   somber_stone_legend:   { color: '#cfaee0', r: 4 },
 
   // --- consumables ---
@@ -190,7 +186,7 @@ export const CATS = {
 // not fixed.)
 export const CAT_GROUPS = [
   { id: 'basic',   label: 'group.basic',
-    cats: ['grace', 'boss', 'poi', 'region', 'fragment', 'landmark',
+    cats: ['grace', 'boss', 'poi', 'fragment', 'landmark',
            'merchants'] },
   { id: 'gear',    label: 'group.gear',
     cats: ['armaments', 'armour', 'talismans', 'ashes_of_war', 'spirits'] },
@@ -198,11 +194,11 @@ export const CAT_GROUPS = [
     cats: ['smithing_stone_1', 'smithing_stone_2', 'smithing_stone_3',
            'smithing_stone_4', 'smithing_stone_5', 'smithing_stone_6',
            'smithing_stone_7', 'smithing_stone_8',
-           'smithing_stone_shadow', 'smithing_stone_legend',
+           'smithing_stone_legend',
            'somber_stone_1', 'somber_stone_2', 'somber_stone_3',
            'somber_stone_4', 'somber_stone_5', 'somber_stone_6',
            'somber_stone_7', 'somber_stone_8', 'somber_stone_9',
-           'somber_stone_shadow', 'somber_stone_legend',
+           'somber_stone_legend',
            ...GLOVEWORT_CATS,
            'glovewort_grave_great', 'glovewort_ghost_great', 'whetblades'] },
   { id: 'blessing', label: 'group.blessing',
@@ -223,7 +219,7 @@ export const CAT_GROUPS = [
            'bell_ghost_glovewort', 'merchant_bell_bearings', 'drop_bell_bearings', 'drop_weapons',
            'drop_armour', 'drop_talismans', 'drop_items',
            'boss_drops', 'farm_spots', 'stonesword_keys',
-           'lost_ashes', 'mp_fingers', 'gestures', 'prattling_pates',
+           'lost_ashes', 'mp_fingers', 'prattling_pates',
            'dragon_hearts', 'ammo'] },
 ];
 
@@ -260,9 +256,7 @@ export const EXTRA_CATS = {
   perfume_bottle:     { color: '#a9a2c9', r: 4, group: 'loot' },
   shop_stock:         { color: '#9fb3a0', r: 3, group: 'loot' },
 
-  seeds_tears:          { group: 'blessing', color: '#8ede7a', r: 4 },
-  bell_bearings:        { group: 'loot',     color: '#e0a35a', r: 4 },
-};
+    };
 // High-volume categories that bury the map when they are all on at once. They
 // start hidden and can be switched on from the sidebar.
 export const OFF_BY_DEFAULT = new Set(['misc', 'consumables', 'gathering', 'ammo']);

@@ -135,6 +135,22 @@
 
 ### 数据与判定
 
+* **10 个空图例行清零（4 行填上、6 行删除）**：分类自查此前列出 10 个"有行没数据"的行，逐个查清病因后分两类处理。
+  * **能填的按 C 的方法填**（病因都是归类被写死）：`dragon_hearts`——游戏里叫「龙心脏」，我们有 **20**
+    个标记（13 在 `boss-drops`、5 在 `emevd-drops`、2 条仅登记）却全归在 `boss_drops`；
+    `pots_cracked` / `pots_great_cracked` / `perfume_bottle`——`mfg_categories` 把
+    9500/9501/9510/2009500 与"投掷壶"（`_sg` 30/40）全塞进 `pots_n_perfumes` 一个桶。现按游戏名显式
+    拆分：9500 龟裂壶 → `pots_cracked`、2009500 大龟裂壶 → `pots_great_cracked`、9510 调香瓶 →
+    `perfume_bottle`、9501 仪式壶 → `pots_n_perfumes`；制作类投掷壶（火焰壶、雷电壶、粪便壶……共 60 个
+    id）改归 `consumables`（那一行标签原本是"仪式壶"，与内容不符；当前没有标记落在这个桶里，属规则修正）。
+    实测：`pots_n_perfumes` **40 → 8**、`pots_cracked` 0 → 14、`pots_great_cracked` 0 → 9、
+    `perfume_bottle` 0 → 9、`dragon_hearts` 0 → 18（13+5），标记增删 0。
+  * **填不上的删除声明**：`seeds_tears`（上游遗留的合并桶，早已拆成 `golden_seeds`/`sacred_tears`/
+    `spirit_blessing`，`mfg_categories` 的注释就写着这件事）、`bell_bearings`（与 `drop_bell_bearings`、
+    `bell_smithing`、`bell_somber` 等专用行重复）、`region`（不是标记分类：地区选择器读 `m.region`）、
+    `gestures`（游戏里没有任何物件承载肢体动作）、`smithing_stone_shadow` / `somber_stone_shadow`
+    （游戏名表里根本没有"幽影锻造石"这类物品，映射期待的 8 个 id 也没有任何 lot 发放）。
+  结果：**自查的 dead rows 由 10 → 0**，策略分类 203 → 207、首屏分类 122 → 126、客户端行数 206。
 * **大卢恩获得专属图例行（此前这一行恒为 0 标记）**：8 个大卢恩**其实一直都有坐标**，只是被归在
   `boss_drops`（7 个）与 `drop_items`（1 个）里，于是 `great_runes` 这一行永远是空的。现按
   `mfg_categories.py` 既有的 id 集合模式加入 `GREAT_RUNE_IDS`，并在四处归类点（`extract_items.py` 三处、
@@ -236,7 +252,7 @@
   4 个数据层（EMEVD 奖励、任务与事件奖励、商店货架、数量标注），已补齐，并在安装末尾自动执行自检；
   同时移除写死的步骤编号，新增数据层无需重新编号。
 * **进度口径改由数据下发**：`data/layers.json` 声明每个分类所属层与统计口径。客户端优先据此判断，
-  缺少该文件时回落到 `gather_*` 前缀规则。实测：两种规则在 203 个分类上无差异，其中 35 个分类同时
+  缺少该文件时回落到 `gather_*` 前缀规则。实测：两种规则在 207 个分类上无差异，其中 35 个分类同时
   出现在点位层与计数层（`smithing_stone_*`、`glovewort_*`、`somber_stone_*`），按计数层计，
   与客户端原有逻辑一致。
 * **商店货架归属**：货架为 `ShopLineupParam` 中由说话脚本声明的一段连续行，形式为
@@ -296,7 +312,7 @@
 * **重层懒加载**：注册表新增 `client` 字段（`initial` / `lazy`），`followup`（855 KB）与
   `gather-nodes`（6.15 MB）标记为 `lazy`，服务端提供 `/api/layer/<id>`，页面首帧后并行获取并合并，
   失败时仅缺少对应标记。首屏标记数 28,156 → 5,970；懒加载层压缩后分别为 385,863 B 与 55,417 B。
-  首屏数据含 122 个分类而策略文件声明 203 个，侧栏与勾选状态按策略文件建立，采集点分类不会因数据
+  首屏数据含 126 个分类而策略文件声明 207 个，侧栏与勾选状态按策略文件建立，采集点分类不会因数据
   延迟到达而被剔除。
 * **数据在启动时读入（需要重启服务才会生效）**：`data/*.json`（含 `layers.json` 层策略）只在服务
   启动时加载一次，而 `web/**` 的页面与脚本是逐请求读盘。这里踩过一次坑：重新生成 `layers.json`
@@ -304,7 +320,7 @@
   英文材料名，于是中文界面的采集物分组里出现英文（中文侧栏也因此显得不对）。现已重启，
   并把"服务下发的策略必须与磁盘逐字节一致"加入服务冒烟自查，不一致即报错；
   [docs/实现.md](docs/实现.md) 第 4 节写明了这条约束。
-* **渲染开销**：以真实数据驱动实际绘制回调测量，全部数据层（28,180 个标记、201 个分类）为 3.7–5.1 ms/次，
+* **渲染开销**：以真实数据驱动实际绘制回调测量，全部数据层（28,180 个标记、206 个分类）为 3.7–5.1 ms/次，
   首屏（5,974 个标记）为 1.2–1.9 ms/次，即懒加载将首屏绘制开销降至约 32–38%（Node 与模拟 canvas，
   未进行实际栅格化，为下限值）。
 
@@ -342,7 +358,7 @@
 * **删除十个已废弃分类的声明**：`material_nodes`、`golden_runes`、`golden_runes_low`、
   `one_time_drops`、`smithing_stones`、`smithing_stones_low`、`smithing_stones_rare`、
   `crafting_materials`、`gloveworts`、`great_gloveworts` 在数据中标记数为 0，也不在
-  `data/layers.json` 的 203 个分类里（`restrictCatsToData()` 启动时会按"无人使用"剔除），
+  `data/layers.json` 的 207 个分类里（`restrictCatsToData()` 启动时会按"无人使用"剔除），
   但声明仍留在 `web/js/catalog.js`（CATS 行、EXTRA_CATS 行与分组项）和 `web/js/i18n.js`
   （中英标签，共 20 行），其中 `material_nodes` 的标签还与 `gathering` 重复。现已全部删除，
   并改写 `catalog.js`、`mfg_categories.py` 中随之失效的注释；`crafting_materials` 还有内部用途
@@ -351,7 +367,7 @@
   **20 个数据文件逐字节相同**。
 * **新增分类声明检查**（`_check_categories.mjs`，随自查运行）：核对数据中出现的每个分类都在客户端有
   声明（`CATS`／`EXTRA_CATS`／层策略之一），并列出分组项缺行、以及"声明了但本机数据没有标记"的项。
-  当前结果：**数据分类 203 个，无声明 0 个**，分组项缺行 0 个。
+  当前结果：**数据分类 207 个，无声明 0 个**，分组项缺行 0 个。
 * **文档重组**：原 `docs/汉化说明.md` 拆分为 [docs/机制.md](docs/机制.md)（游戏数据机制）与
   [docs/实现.md](docs/实现.md)（代码结构、层契约、传输、验证与发布流程、与上游差异）；本 README
   按当前功能集重写，更新记录按主题分组。

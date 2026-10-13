@@ -167,6 +167,20 @@ BROKEN_RUNE_IDS = {2002951}
 # description row "说明：大卢恩" do not end with that suffix and stay out.
 GREAT_RUNE_IDS = {191, 192, 193, 194, 195, 196, 8148, 8149, 8150, 8151, 8152, 8153, 10080, 2008000}
 
+# Dragon Hearts: one legend row of their own, same story as the Great Runes - the items are boss drops, so
+# they used to be filed under `boss_drops`. The id is the game's single Dragon Heart goods row.
+DRAGON_HEART_ID = 10060
+
+
+def own_row(item_id):
+    """The legend row an item has of its own, or None. Used by the drop producers, which otherwise file
+    everything under their generic bucket (`boss_drops`, `drop_items`)."""
+    if item_id in GREAT_RUNE_IDS:
+        return "great_runes"
+    if item_id == DRAGON_HEART_ID:
+        return "dragon_hearts"
+    return None
+
 
 def is_great_rune(item_id):
     """True for the goods rows the game calls a Great Rune (see GREAT_RUNE_IDS)."""
@@ -270,8 +284,20 @@ def categorise(iid, name, category):
             return "larval_tears"
         if iid == 10070:
             return "lost_ashes"
-        if iid in (9500, 9501, 9510, 2009500) or _sg(iid) in (30, 40):
+        # The four crafting tools are separate rows, with the names taken from the game's own table:
+        # 9500 龟裂壶, 9501 仪式壶, 9510 调香瓶, 2009500 大龟裂壶. The crafted throwables (_sg 30/40:
+        # 火焰壶, 雷电壶, 粪便壶, ...) used to share the Ritual Pot row, whose label then did not describe
+        # them; they are consumables.
+        if iid == 9500:
+            return "pots_cracked"
+        if iid == 2009500:
+            return "pots_great_cracked"
+        if iid == 9510:
+            return "perfume_bottle"
+        if iid == 9501:
             return "pots_n_perfumes"
+        if _sg(iid) in (30, 40):
+            return "consumables"
         # Id fallbacks for what the name rules above already caught, kept for the
         # case where a name is missing. 10010/10020/2010100 come from upstream,
         # which grouped exactly these three as one "seeds_tears" bucket - which
@@ -333,7 +359,7 @@ def categorise(iid, name, category):
             return "broken_rune"
         if iid in GREAT_RUNE_IDS:
             return "great_runes"
-        if iid == 10060:
+        if iid == DRAGON_HEART_ID:
             return "dragon_hearts"
         if iid in GLOVEWORT_LEVELS:
             family, lvl = GLOVEWORT_LEVELS[iid]

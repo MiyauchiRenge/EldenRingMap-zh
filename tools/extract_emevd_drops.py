@@ -148,8 +148,7 @@ def main():
             nmen = name_of_item(names, iid, kind, "en") or nm
             markers.append({
                 "id": "edrop:%s:%s:%d" % (mid, ent, lot),
-                "cat": ("great_runes" if mfg_categories.is_great_rune(iid)
-                else DROP_CAT.get(kind, "drop_items")),
+                "cat": mfg_categories.own_row(iid) or DROP_CAT.get(kind, "drop_items"),
                 "names": {"zh": nm, "en": nmen},
                 "flag": lots[lot]["flag"],
                 "lot": lot, "entity": ent,

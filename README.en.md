@@ -164,6 +164,28 @@ group.
 
 ### Data and decisions
 
+* **Ten empty legend rows cleared (four filled, six removals)**: the category self-check listed ten rows
+  that held no marker. Each was diagnosed, and they split into two groups.
+  * **Fillable, fixed the same way as the Great Runes** (in every case a hard-coded category was at fault):
+    `dragon_hearts` - the game calls the item 龙心脏 and we have **20** markers for it (13 in `boss-drops`,
+    5 in `emevd-drops`, 2 registered only), all filed under `boss_drops`; and `pots_cracked` /
+    `pots_great_cracked` / `perfume_bottle` - `mfg_categories` pushed 9500/9501/9510/2009500 and the
+    crafted throwables (`_sg` 30/40) into the single `pots_n_perfumes` bucket. They are now split by the
+    game's own names: 9500 Cracked Pot -> `pots_cracked`, 2009500 Great Cracked Pot -> `pots_great_cracked`,
+    9510 Perfume Bottle -> `perfume_bottle`, 9501 Ritual Pot -> `pots_n_perfumes`, while the crafted
+    throwables (Fire Pot, Lightning Pot, ... 60 ids) become `consumables` - that bucket's label used to read
+    "Ritual Pot", which did not describe them (no marker sits in it today, so this one is a rule fix).
+    Measured: `pots_n_perfumes` **40 -> 8**, `pots_cracked` 0 -> 14, `pots_great_cracked` 0 -> 9,
+    `perfume_bottle` 0 -> 9, `dragon_hearts` 0 -> 18 (13 + 5), with no marker added or removed.
+  * **Declarations removed because nothing can ever fill them**: `seeds_tears` (upstream's single bucket,
+    long since split into `golden_seeds` / `sacred_tears` / `spirit_blessing` - `mfg_categories` says so in a
+    comment), `bell_bearings` (duplicated by the specific rows `drop_bell_bearings`, `bell_smithing`,
+    `bell_somber`, ...), `region` (not a marker category at all: the region picker reads `m.region`),
+    `gestures` (no game object carries a gesture), and `smithing_stone_shadow` / `somber_stone_shadow`
+    (the game's name table has no Shadow-realm smithing stone, and none of the eight ids the mapping expects
+    is granted by any lot).
+  Result: the self-check's dead rows went **10 -> 0**, policy categories 203 -> 207, first-paint categories
+  122 -> 126, rendered rows 206.
 * **The Great Runes gained their own legend row (it used to hold no marker at all)**: all eight Great Runes
   **already had coordinates**; they were simply filed under `boss_drops` (seven) and `drop_items` (one), so
   the `great_runes` row stayed empty. Following the id-set pattern already used in `mfg_categories.py`, a
@@ -294,7 +316,7 @@ group.
   setup, and the hardcoded step numbers were removed so new data layers need no renumbering.
 * **Progress accounting is supplied as data**: `data/layers.json` states which data layer each category
   belongs to and how it is counted. The client prefers it and falls back to the `gather_*` prefix rule
-  when the file is absent. Measured: the two rules agree on all 203 categories, including 35 categories
+  when the file is absent. Measured: the two rules agree on all 207 categories, including 35 categories
   that appear in both a location layer and a counting layer (`smithing_stone_*`, `glovewort_*`,
   `somber_stone_*`), which are counted as progress, matching the client's previous logic.
 * **Shop shelf attribution**: a shelf is a run of `ShopLineupParam` rows declared by a talk script, either
@@ -373,7 +395,7 @@ group.
   `followup` (855 KB) and `gather-nodes` (6.15 MB) are marked lazy, the server exposes them through
   `/api/layer/<id>` and the page fetches and merges them after its first paint, so a failure only means
   those markers are missing. Initial marker count fell from 28,156 to 5,970; the lazy data layers arrive as
-  385,863 B and 55,417 B compressed. The initial document carries 121 categories while the policy file
+  385,863 B and 55,417 B compressed. The initial document carries 126 categories while the policy file
   declares 202, and the sidebar and tick state are built from the policy, so gatherable categories are
   not dropped while their data is in flight.
 * **Data is read at boot (a restart is needed to pick up regenerated data)**: `data/*.json` (including the
@@ -386,7 +408,7 @@ group.
   `data/layers.json` byte for byte and fails if they differ; section 4 of
   [docs/实现.md](docs/实现.md) states the constraint.
 * **Rendering cost**: measured by driving the real draw callback with the real data, a full set (28,180
-  markers, 201 categories enabled) costs 3.7-5.1 ms per draw and the first paint (5,974 markers)
+  markers, 206 categories enabled) costs 3.7-5.1 ms per draw and the first paint (5,974 markers)
   1.2-1.9 ms, so lazy loading reduces the first-paint draw cost to roughly a third. The measurement uses
   Node and a simulated canvas without rasterisation and is therefore a lower bound; two runs of the same
   harness differed by about 30% (3.66/1.16 ms and 5.09/1.93 ms), hence the range.
@@ -433,7 +455,7 @@ group.
 * **Ten obsolete category declarations removed**: `material_nodes`, `golden_runes`, `golden_runes_low`,
   `one_time_drops`, `smithing_stones`, `smithing_stones_low`, `smithing_stones_rare`,
   `crafting_materials`, `gloveworts` and `great_gloveworts` have no markers in the data and are absent
-  from the 203 categories in `data/layers.json` (so `restrictCatsToData()` drops them at boot as unused),
+  from the 207 categories in `data/layers.json` (so `restrictCatsToData()` drops them at boot as unused),
   yet their declarations remained in `web/js/catalog.js` (CATS rows, EXTRA_CATS rows and a group entry)
   and in `web/js/i18n.js` (20 label lines across both languages); `material_nodes` even duplicated the
   `gathering` label. All of them are gone, and the comments in `catalog.js` and `mfg_categories.py` that
@@ -444,7 +466,7 @@ group.
 * **Category-declaration check added** (`_check_categories.mjs`, run with the other self-checks): it
   verifies that every category appearing in the data is declared by the client (`CATS`, `EXTRA_CATS` or
   the layer policy) and reports group entries without a row plus declarations that this data set never
-  fills. Current result: **203 data categories, 0 undeclared**, 0 group entries without a row.
+  fills. Current result: **207 data categories, 0 undeclared**, 0 group entries without a row.
 * **Documentation restructured**: the former `docs/汉化说明.md` was split into
   [docs/机制.md](docs/机制.md) (game-data mechanisms) and [docs/实现.md](docs/实现.md) (code structure,
   layer contract, transport, verification and release flow, and the file-by-file difference from

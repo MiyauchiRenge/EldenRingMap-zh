@@ -865,8 +865,7 @@ def main():
         en_name = item_name("en", iid, cat)
         boss_extra.append({
             "id": f"drop:{lot_id}",
-            "cat": ("great_runes" if mfg_categories.is_great_rune(iid)
-                    else "boss_drops"),
+            "cat": mfg_categories.own_row(iid) or "boss_drops",
             "names": {loc: (item_name(loc, iid, cat) or en_name) for loc in LOCALES},
             "flag": lot_def.get(row.data, "getItemFlagId"),
             "master": boss["master"], "px": boss["px"], "py": boss["py"],
@@ -1002,8 +1001,7 @@ def main():
                     boss_extra = []
                 boss_extra.append({
                     "id": f"bossdrop:{ov['lot']}:{cat}:{iid}",
-                    "cat": ("great_runes" if mfg_categories.is_great_rune(iid)
-                            else "boss_drops"),
+                    "cat": mfg_categories.own_row(iid) or "boss_drops",
                     "names": {loc: (item_name(loc, iid, cat) or mk["names"].get(loc))
                               for loc in LOCALES},
                     "flag": None,

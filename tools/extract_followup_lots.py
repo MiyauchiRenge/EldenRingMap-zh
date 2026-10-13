@@ -192,8 +192,7 @@ def main():
             new_names.add(nm)
             out.append({
                 "id": "follow:%d:%d" % (lot, lot + k),
-                "cat": ("great_runes" if mfg_categories.is_great_rune(iid)
-                else ladder_cat(nm) or DROP_CAT.get(kind, "drop_items")),
+                "cat": mfg_categories.own_row(iid) or ladder_cat(nm) or DROP_CAT.get(kind, "drop_items"),
                 "names": {"zh": nm, "en": nmen},
                 "flag": None, "lot": lot + k, "parentLot": lot,
                 "master": src.get("master"), "px": src["px"], "py": src["py"],
