@@ -321,10 +321,20 @@ group.
   385,863 B and 55,417 B compressed. The initial document carries 121 categories while the policy file
   declares 202, and the sidebar and tick state are built from the policy, so gatherable categories are
   not dropped while their data is in flight.
-* **Rendering cost**: measured by driving the real draw callback with the real data, a full set (28,177
-  markers, 201 categories enabled) costs 5.09 ms per draw and the first paint (5,971 markers) 1.93 ms,
-  so lazy loading reduces the first-paint draw cost to about 38%. The measurement uses Node and a
-  simulated canvas without rasterisation and is therefore a lower bound.
+* **Data is read at boot (a restart is needed to pick up regenerated data)**: `data/*.json` (including the
+  `layers.json` layer policy) is loaded once, when the server starts, while the pages and scripts under
+  `web/**` are read from disk per request. That bit us once: after regenerating `layers.json` (which now
+  carries a localised name per category) the server was not restarted, so the client kept the old policy
+  and the gatherable rows could only fall back to the English material names from i18n - which is why
+  English appeared inside the Chinese interface's gathering group (and why that sidebar looked wrong).
+  The server has been restarted, and the service smoke test now compares the **policy it serves** with
+  `data/layers.json` byte for byte and fails if they differ; section 4 of
+  [docs/实现.md](docs/实现.md) states the constraint.
+* **Rendering cost**: measured by driving the real draw callback with the real data, a full set (28,180
+  markers, 201 categories enabled) costs 3.7-5.1 ms per draw and the first paint (5,974 markers)
+  1.2-1.9 ms, so lazy loading reduces the first-paint draw cost to roughly a third. The measurement uses
+  Node and a simulated canvas without rasterisation and is therefore a lower bound; two runs of the same
+  harness differed by about 30% (3.66/1.16 ms and 5.09/1.93 ms), hence the range.
 
 ### Scripts and documents
 
